@@ -1,0 +1,18 @@
+global:
+  scrape_interval: 15s # Fréquence à laquelle Prometheus va scraper les métriques
+  evaluation_interval: 15s # Fréquence à laquelle les règles d'alerte sont évaluées
+
+rule_files:
+  - "rules/*.yml"
+
+scrape_configs:
+  - job_name: 'prometheus' # Nom du job pour Prometheus lui-même
+    static_configs:
+      - targets: ['localhost:9090'] # Prometheus se monitorera lui-même
+  - job_name: 'blood_cells_server'
+    static_configs:
+      - targets: ['blood_cells_server:3000']
+  - job_name: 'node_exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+

@@ -1,0 +1,5 @@
+transform.reinhard: [true, false]
+transform.clahe: [true, false]
+transform.jpeg: [true, false]
+transform.jpeg_quality: [25, 30, 35, 40, 50]
+transform.clahe_clip_limit: [1.0, 2.0, 3.0, 4.0]

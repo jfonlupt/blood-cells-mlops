@@ -1,0 +1,146 @@
+\section{Mise en œuvre MLOps}
+\label{sec:mlops}
+
+\subsection{Vue d'ensemble}
+
+Au-delà de l'entraînement et de l'évaluation des modèles décrits dans la partie précédente, le projet met en place l'infrastructure nécessaire pour faire fonctionner ces modèles de manière reproductible et observable, du suivi des expériences jusqu'à la mise à disposition d'un service de prédiction surveillé.
+Cette infrastructure est entièrement décrite par conteneurs, assemblés via \textbf{Docker Compose}\footnote{\url{https://docs.docker.com/compose/}}, et organisée en quatre blocs fonctionnels : le suivi des expériences et le registre de modèles, l'exécution reproductible de l'entraînement, l'orchestration des tâches récurrentes, et le service d'inférence avec sa supervision.
+Le tableau~\ref{tab:mlops-services} récapitule les services définis et leur rôle.
+
+\begin{table}[H]
+  \centering
+  \small
+  \setlength{\tabcolsep}{4pt}
+  \renewcommand{\arraystretch}{1.2}
+  \begin{tabularx}{\linewidth}{@{}l l X@{}}
+    \toprule
+    \textbf{Bloc} & \textbf{Service} & \textbf{Rôle} \\
+    \midrule
+    \multirow{2}{*}{Suivi \& registre}
+      & \texttt{minio}  & Stockage objet S3-compatible des artefacts de run (modèles, références de drift). \\
+      & \texttt{mlflow} & Serveur de tracking (métriques, paramètres, artefacts) et registre de modèles versionné. \\
+    \midrule
+    Entraînement
+      & \texttt{blood\_cells\_training} & Image buildée depuis le code du dépôt, exécute une expérience (\texttt{src.experiments.run}) et journalise le résultat sur MLflow. \\
+    \midrule
+    \multirow{4}{*}{Orchestration}
+      & \texttt{airflow-webserver} & Interface web et API d'Airflow. \\
+      & \texttt{airflow-scheduler} & Planification et déclenchement des DAGs. \\
+      & \texttt{airflow-worker} & Exécution des tâches (\emph{CeleryExecutor}). \\
+      & \texttt{flower} & Supervision des workers Celery. \\
+    \midrule
+    \multirow{2}{*}{Backend Airflow}
+      & \texttt{postgres} & Base de métadonnées d'Airflow (DAGs, runs, connexions). \\
+      & \texttt{redis}    & Broker de messages Celery entre scheduler et workers. \\
+    \midrule
+    Service \& supervision
+      & \texttt{blood\_cells\_server} & Service d'inférence (BentoML) : authentification, prédiction, évaluation en ligne. \\
+      & \texttt{node-exporter} & Export des métriques système de l'hôte (CPU, mémoire, disque). \\
+      & \texttt{prometheus} & Collecte et stockage des séries temporelles de métriques. \\
+      & \texttt{grafana} & Tableaux de bord et règles d'alerte sur les métriques Prometheus. \\
+    \bottomrule
+  \end{tabularx}
+  \caption{Services définis dans \texttt{docker-compose.yaml} et leur rôle.}
+  \label{tab:mlops-services}
+\end{table}
+
+Les secrets et paramètres d'environnement (identifiants MinIO, clé JWT, ports) sont externalisés dans un fichier \texttt{.env} non versionné, dont un \texttt{.env.example} documente les clés attendues.
+
+\subsection{Suivi des expériences et registre de modèles}
+\label{sub:mlops-tracking}
+
+Le service \texttt{mlflow} (construit à partir de l'image officielle MLflow, avec \texttt{boto3} ajouté pour parler le protocole S3) expose un serveur de tracking sur le port configuré (\texttt{MLFLOW\_PORT}), avec un \emph{backend store} SQLite et un \emph{artifact store} pointant vers le bucket \texttt{MLFLOW\_ARTFACT\_BUCKET} hébergé par le service \texttt{minio}.
+\textbf{MinIO}\footnote{\url{https://min.io/}} joue ainsi le rôle d'un stockage objet compatible S3, auto-hébergé, pour les artefacts volumineux (poids de modèles, références de drift sérialisées) que le backend SQLite ne gère pas directement ; les identifiants MinIO font aussi office de \emph{credentials} AWS (\texttt{AWS\_ACCESS\_KEY\_ID}/\texttt{AWS\_SECRET\_ACCESS\_KEY}) côté client MLflow.
+
+Chaque exécution du pipeline d'entraînement (\S~\ref{sub:mlops-training}) journalise sur MLflow sa configuration, ses métriques d'entraînement/validation/test et, en fin de run, compare sa métrique de référence (\texttt{test\_f1\_macro}) à celle du modèle actuellement \emph{champion} dans le registre.
+Si l'écart dépasse un seuil (0,01), le nouveau modèle est enregistré et marqué de l'alias \texttt{challenger} ; la promotion effective d'un \texttt{challenger} en \texttt{champion} reste une étape de validation séparée, volontairement non automatisée, pour garder un contrôle humain sur ce qui est exposé en service.
+Le service d'inférence (\S~\ref{sub:mlops-serving}) ne charge jamais que le modèle portant l'alias \texttt{champion} pour une tâche donnée.
+
+\subsection{Conteneurisation de l'entraînement}
+\label{sub:mlops-training}
+
+Le service \texttt{blood\_cells\_training} construit une image à partir du \texttt{Dockerfile} du dépôt (installation des dépendances via \texttt{uv}, copie du code), puis lance \texttt{python -m src.experiments.run} avec une configuration YAML montée depuis \texttt{./configs}.
+Les données (\texttt{./data}) et les résultats (\texttt{./results}) sont montés en volumes plutôt qu'intégrés à l'image, pour que chaque run reste reproductible sans reconstruire l'image à chaque changement de données ou de configuration, conformément au framework d'expérimentation décrit en \S~\ref{sec:modelisation} (config versionnée, hash de run, leaderboard).
+Le commit git courant (\texttt{GIT\_COMMIT}) est passé en argument de build et journalisé par le code de tracking (\texttt{src.experiments.tracking}), car l'image d'exécution ne contient pas l'historique \texttt{.git} nécessaire à la détection automatique du commit par MLflow.
+
+\subsection{Orchestration}
+\label{sub:mlops-orchestration}
+
+\textbf{Apache Airflow}\footnote{\url{https://airflow.apache.org/}} est déployé avec un \emph{CeleryExecutor} : le \texttt{scheduler} planifie les tâches, les \texttt{worker}s les exécutent, \texttt{redis} sert de \emph{broker} de messages entre les deux et \texttt{postgres} stocke les métadonnées (définitions de DAGs, historique des runs, connexions).
+\texttt{flower} fournit une interface de supervision des workers Celery.
+Les DAGs sont montés depuis le dossier \texttt{./dags} du dépôt (volume partagé avec tous les composants Airflow), ce qui permet de versionner les workflows avec le reste du code.
+À ce stade, l'infrastructure d'orchestration est en place (webserver, scheduler, workers, backend) mais le dossier \texttt{dags/} ne contient encore aucun DAG applicatif : la prochaine étape consiste à y définir les workflows récurrents du projet, au premier chef la génération périodique de données de contrôle pour la détection de dérive (\S~\ref{sub:mlops-drift}) et, à terme, le déclenchement d'un ré-entraînement.
+
+\subsection{Service d'inférence}
+\label{sub:mlops-serving}
+
+Le service \texttt{blood\_cells\_server} expose le modèle \emph{champion} via \textbf{BentoML}\footnote{\url{https://www.bentoml.com/}}, sous la forme d'une API HTTP (\texttt{src.experiments.server}) décrite par \texttt{bentofile.yaml} et construite par \texttt{bentoml build} puis \texttt{bentoml containerize}.
+Trois routes sont exposées :
+\begin{itemize}
+  \item \texttt{/login} — authentifie un utilisateur (identifiants statiques côté serveur) et délivre un \emph{jeton JWT} valable une heure ;
+  \item \texttt{/predict} — route protégée par un middleware de vérification du jeton ; prend un nom de modèle et une liste d'images, renvoie pour chacune la classe prédite et les probabilités par classe ;
+  \item \texttt{/evaluate} — même entrée que \texttt{/predict}, enrichie des étiquettes réelles ; calcule en plus les métriques de performance (accuracy, précision, rappel, F1) et un rapport de dérive des données (\S~\ref{sub:mlops-drift}) sur le lot reçu.
+\end{itemize}
+Le service récupère le modèle \emph{champion} correspondant depuis le registre MLflow (\S~\ref{sub:mlops-tracking}) et le met en cache en mémoire par nom de modèle, pour éviter un rechargement à chaque requête.
+
+\subsection{Supervision et alerting}
+\label{sub:mlops-monitoring}
+
+Le service BentoML expose nativement des métriques au format Prometheus (compteurs de requêtes par \emph{endpoint}/code HTTP, histogrammes de latence), complétées par des métriques applicatives spécifiques : nombre de prédictions par catégorie, et — alimentées par l'appel à \texttt{/evaluate} — accuracy/précision/rappel/F1 du modèle ainsi que les indicateurs de dérive (part de descripteurs en dérive, dérive des \emph{embeddings}) par modèle.
+\textbf{Prometheus}\footnote{\url{https://prometheus.io/}} scrute ces métriques (\texttt{blood\_cells\_server}), celles de Prometheus lui-même et celles de l'hôte exposées par \texttt{node-exporter} (CPU, mémoire, disque), toutes les 15 secondes.
+\textbf{Grafana}\footnote{\url{https://grafana.com/}} s'y connecte comme source de données et affiche trois tableaux de bord provisionnés (infrastructure, API, modèle), ainsi que des règles d'alerte organisées en quatre familles :
+\begin{itemize}
+  \item \textbf{Infrastructure} — CPU et mémoire de l'hôte au-dessus de 85~\% pendant 5 minutes ;
+  \item \textbf{API} — service d'inférence non joignable (\emph{scrape} en échec depuis 1 minute), ou taux d'erreur HTTP supérieur à 50~\% sur 2 heures ;
+  \item \textbf{Qualité du modèle} — F1 score en dessous de 0,7 pendant 10 minutes ;
+  \item \textbf{Dérive des données} — part de descripteurs en dérive au-dessus de 0,6, ou dérive des \emph{embeddings} au-dessus de 0,55, pendant 10 minutes.
+\end{itemize}
+Ces seuils et dashboards donnent une première base de supervision opérationnelle du service, indépendante de l'exploration ponctuelle menée en \S~\ref{sec:resultats}.
+
+\subsection{Détection de dérive des données}
+\label{sub:mlops-drift}
+
+La détection de dérive s'appuie sur \textbf{Evidently}\footnote{\url{https://www.evidentlyai.com/}} et sur une référence compacte calculée une fois pour toutes à l'entraînement : au lieu de conserver les images brutes du jeu d'entraînement, seuls des descripteurs tabulaires (dimensions, luminosité, contraste, netteté, histogrammes de couleur) et, le cas échéant, des \emph{embeddings} du modèle sont journalisés comme artefact MLflow du run \emph{champion} (\texttt{drift\_reference/}).
+À chaque appel à \texttt{/evaluate}, ces descripteurs sont recalculés sur le lot d'images reçu et comparés à la référence pour produire un rapport Evidently (nombre et part de colonnes en dérive, dérive par colonne, dérive des \emph{embeddings} si disponibles), dont les valeurs alimentent les métriques Prometheus décrites ci-dessus.
+La même logique de construction de rapport est partagée entre le service BentoML et un futur point d'entrée en ligne de commande, pour éviter deux implémentations qui divergeraient au fil des évolutions.
+Un script utilitaire (\texttt{src/helpers/data\_drift.py}) simule ce flux de bout en bout à des fins de test : il mélange progressivement des images d'une source absente du jeu d'entraînement du modèle \emph{champion} à des images de test connues, puis interroge \texttt{/predict} et \texttt{/evaluate} pour vérifier que la dérive introduite est bien détectée.
+
+\subsection{Synthèse}
+
+L'ensemble de cette infrastructure permet de faire vivre les modèles entraînés en \S~\ref{sec:modelisation} au-delà de l'expérimentation ponctuelle : un registre de modèles versionné et comparé automatiquement au \emph{champion} courant, un service d'inférence authentifié et observable, et une supervision couvrant à la fois la santé du service, la qualité des prédictions et la dérive des données reçues en production.
+La figure~\ref{fig:mlops-architecture} résume la circulation des données et des modèles entre les différents services.
+
+\begin{figure}[H]
+  \centering
+  \resizebox{\linewidth}{!}{%
+  \begin{tikzpicture}[
+    box/.style={draw=lioraink, thick, rounded corners, fill=lioraink!6,
+      text=lioraink, align=center, minimum height=1.1cm, minimum width=3.1cm,
+      font=\sffamily\small},
+    lbl/.style={font=\sffamily\scriptsize, text=lioragrey, align=center},
+    arr/.style={-{Latex[length=2.2mm]}, thick, lioraink},
+    futur/.style={-{Latex[length=2.2mm]}, thick, lioragrey, dashed},
+  ]
+    % --- Nœuds ---
+    \node[box] (airflow)    at (0,3.4)   {\texttt{airflow}\\[2pt]orchestration};
+    \node[box] (training)   at (0,1.2)   {\texttt{blood\_cells\_training}\\[2pt]entraînement};
+    \node[box] (mlflow)     at (5.6,1.2) {\texttt{mlflow}\\[2pt]tracking \& registre};
+    \node[box] (minio)      at (5.6,-1.2){\texttt{minio}\\[2pt]artefacts (S3)};
+    \node[box] (server)     at (11.2,1.2) {\texttt{blood\_cells\_server}\\[2pt]service d'inférence};
+    \node[box] (prometheus) at (16.8,1.2){\texttt{prometheus}\\[2pt]métriques};
+    \node[box] (grafana)    at (16.8,-1.2){\texttt{grafana}\\[2pt]dashboards \& alertes};
+
+    % --- Flèches ---
+    \draw[futur] (airflow) -- (training) node[lbl, right, midway] {prévu};
+    \draw[arr] (training) -- (mlflow) node[lbl, above, midway] {logge};
+    \draw[arr] (mlflow) -- (minio) node[lbl, right, midway, xshift=1pt] {stocke};
+    \draw[arr] (mlflow) -- (server) node[lbl, above, midway] {\emph{champion}};
+    \draw[arr] (server) -- (prometheus) node[lbl, above, midway] {expose};
+    \draw[arr] (prometheus) -- (grafana) node[lbl, right, midway, xshift=1pt] {scrute};
+  \end{tikzpicture}%
+  }
+  \caption{Architecture MLOps : circulation des données et des modèles entre les services du \texttt{docker-compose}. Les flèches pleines correspondent à des liens déjà en fonctionnement ; la flèche en pointillés indique un lien d'orchestration prévu mais pas encore implémenté (\S~\ref{sub:mlops-orchestration}).}
+  \label{fig:mlops-architecture}
+\end{figure}
+
+Les étapes suivantes identifiées sont l'implémentation de DAGs Airflow pour automatiser la génération périodique de données de contrôle et, à plus long terme, le déclenchement conditionnel d'un ré-entraînement lorsque la dérive ou la qualité du modèle se dégradent.

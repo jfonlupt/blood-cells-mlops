@@ -1,0 +1,71 @@
+# Config de base — reprend les valeurs par défaut de ExperimentConfig.
+# Le grid search tourne par défaut en holdout (validation croisée = coût x N).
+task: criticality
+seed: 0
+
+data:
+  datasets: [barcelona, munich]
+  n_images: 0            # 0 = tout le dataset
+  test_size: 0.15
+  stratify: type_dataset
+
+transform:
+  img_size: [224, 224]
+  reinhard: true
+  reinhard_samples: 500
+  clahe: true
+  clahe_clip_limit: 2.0
+  clahe_grid_size: 8
+  jpeg: true
+  jpeg_quality: 35
+  p_rotation: 0.9
+  p_brightness: 0.5
+  p_contrast: 0.5
+  brightness_delta: 0.15
+  contrast_delta: 0.15
+
+model:
+  name: multi_archi
+  architecture:
+    blocks :
+      - {depth: 2, channels: 32, kernel: 3}
+      - {depth: 2, channels: 64, kernel: 3}
+    classifier : [128]
+    use_batchnorm : True
+    use_gap : True
+
+loss:                    # cross-entropy nue (migré depuis name: cross_entropy)
+  beta: 0.0
+  gamma: 1.0
+  lambda_cost: 0.0
+  extra_weight: {}
+  label_smoothing: 0.0
+  cost_matrix: null
+
+optim:
+  name: adam
+  lr: 0.0001
+  weight_decay: 0.0
+
+scheduler:
+  name: plateau
+  patience: 3
+  lr_min: 0.0
+  step_gamma: 0.1
+
+train:
+  nb_epoch: 50
+  batch_size: 256
+  validation: holdout
+  val_size: 0.15
+  cross_val_folds: 3
+  early_stopping_patience: 9
+  device: auto
+  sampler: weight        # none | weight (WeightedRandomSampler)
+  sampler_alpha: 0.5   # exposant sur 1/fréquence : 0=uniforme, 1=inverse-fréquence, 0.5=racine
+
+
+output:
+  root: results
+  save_checkpoint: true
+  save_figures: true

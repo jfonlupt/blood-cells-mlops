@@ -1,0 +1,102 @@
+# Comparaison de backbones pré-entraînés (timm).
+#   uv run python -m src.experiments.grid_cli \
+#     --config configs/transfer.yaml --grid configs/grids/architecture/transfer.yaml
+#
+# Liste de sous-grilles (produit cartésien par sous-grille) pour éviter les
+# combinaisons redondantes : avec freeze=all le backbone_lr_mult n'a aucun effet.
+
+ - model.transfer.backbone:
+    - resnet50
+    - efficientnet_b0
+   #  - tf_efficientnetv2_s.in21k_ft_in1k
+    - densenet121
+    - convnext_tiny
+    - vit_base_patch16_224.augreg2_in21k_ft_in1k
+   #  - swin_tiny_patch4_window7_224
+   model.transfer.freeze: [all]
+
+# 2. Fine-tuning : backbone dégelé, LR discriminatif.
+ - model.transfer.backbone:
+    - resnet50
+    - efficientnet_b0
+   #  - tf_efficientnetv2_s.in21k_ft_in1k
+    - densenet121
+    - convnext_tiny
+    - vit_base_patch16_224.augreg2_in21k_ft_in1k
+   #  - swin_tiny_patch4_window7_224
+   model.transfer.freeze: [none]
+   model.transfer.backbone_lr_mult: [1.0, 0.1, 0.01]
+
+# 3. Gel partiel : ne dégeler que les N derniers groupes de stages.
+#    Décommenter au besoin.
+ - model.transfer.backbone: 
+    - resnet50
+    - efficientnet_b0
+   #  - tf_efficientnetv2_s.in21k_ft_in1k
+    - densenet121
+    - convnext_tiny
+    - vit_base_patch16_224.augreg2_in21k_ft_in1k
+   #  - swin_tiny_patch4_window7_224
+   model.transfer.freeze: [1, 2]
+   model.transfer.backbone_lr_mult: [1.0, 0.1, 0.01]
+
+# 4. Contrôle : mêmes architectures, poids aléatoires (mesure l'apport du pré-entraînement).
+#    Décommenter au besoin.
+ - model.transfer.backbone: 
+    - resnet50
+    - efficientnet_b0
+   #  - tf_efficientnetv2_s.in21k_ft_in1k
+    - densenet121
+    - convnext_tiny
+    - vit_base_patch16_224.augreg2_in21k_ft_in1k
+   #  - swin_tiny_patch4_window7_224
+   model.transfer.pretrained: [false]
+   model.transfer.freeze: [none]
+
+# 5. Normalisation : ImageNet vs stats du dataset harmonisé (sur un backbone).
+#    Décommenter au besoin.
+ - model.transfer.backbone:
+    - resnet50
+    - efficientnet_b0
+   #  - tf_efficientnetv2_s.in21k_ft_in1k
+    - densenet121
+    - convnext_tiny
+    - vit_base_patch16_224.augreg2_in21k_ft_in1k
+   #  - swin_tiny_patch4_window7_224
+   model.transfer.freeze: [none]
+   model.transfer.backbone_lr_mult: [0.1]
+   transform.norm_stats: [imagenet, dataset]
+
+# 6. Profondeur de tête : 1 vs 2 couches denses x avec/sans dropout, en linear
+#    probing (freeze=all -- c'est là que la capacité de la tête pèse le plus,
+#    puisque le backbone est figé). Factorielle 2x2 -> 4 runs/modèle.
+#    head_hidden=[] (tête Linear seule) est déjà couvert par le bloc 1 ; pas
+#    besoin de le répéter ici.
+ - model.transfer.backbone:
+    - resnet50
+    - efficientnet_b0
+   #  - tf_efficientnetv2_s.in21k_ft_in1k
+    - densenet121
+    - convnext_tiny
+    - vit_base_patch16_224.augreg2_in21k_ft_in1k
+   #  - swin_tiny_patch4_window7_224
+   model.transfer.freeze: [all]
+   model.transfer.head_hidden: [[256], [256, 128]]
+   model.transfer.head_dropout: [0.0, 0.3]
+
+# 7. Profondeur de tête : 1 vs 2 couches denses x avec/sans dropout, en fine
+#    tuning (freeze=none). Factorielle 2x2 -> 4 runs/modèle.
+#    head_hidden=[] (tête Linear seule) est déjà couvert par le bloc 1 ; pas
+#    besoin de le répéter ici.
+ - model.transfer.backbone:
+    - resnet50
+    - efficientnet_b0
+   #  - tf_efficientnetv2_s.in21k_ft_in1k
+    - densenet121
+    - convnext_tiny
+    - vit_base_patch16_224.augreg2_in21k_ft_in1k
+   #  - swin_tiny_patch4_window7_224
+   model.transfer.freeze: [none]
+   model.transfer.head_hidden: [[256], [256, 128]]
+   model.transfer.backbone_lr_mult: [0.1]
+   model.transfer.head_dropout: [0.0, 0.3]

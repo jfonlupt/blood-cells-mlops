@@ -1,0 +1,6 @@
+outs:
+- md5: 325bc3e317e18806eacff78db18524a7.dir
+  size: 11757958057
+  nfiles: 18369
+  hash: md5
+  path: PKG-AML-Cytomorphology_LMU

@@ -1,0 +1,7 @@
+[core]
+    remote = s3
+[cache]
+    type = "hardlink,symlink"
+['remote "s3"']
+    url = s3://blood-cells-123456789012/dvc
+    region = eu-west-3

@@ -1,0 +1,67 @@
+# Perte unique (ClinicalLoss) : gamma=0 -> CE pondérée, gamma>0 -> focal,
+# lambda_cost>0 -> terme de coût. Ci-dessous on fait varier la pondération.
+
+# # Cross-entropy pondérée seule, différentes intensités
+# - loss.beta: [0.9, 0.99, 0.999, 0.9999]
+#   loss.gamma: [0.0]
+
+# # Focal, différents gamma / beta
+# - loss.beta: [0.99, 0.999, 0.9999]
+#   loss.gamma: [1.0, 2.0]
+
+# # WeightedRandomSampler seul, à différentes intensités de rééquilibrage
+# # (alpha : 0.25 = léger, 0.5 = racine, 1.0 = inverse-fréquence pleine)
+# - train.sampler: [weight]
+#   train.sampler_alpha: [0.25, 0.5, 1.0]
+
+# # Sampler partiel + focal : la correction du déséquilibre est partagée
+# # entre le rééchantillonnage et la pondération de la loss (pas comptée deux fois)
+# - loss.beta: [0.99, 0.999]
+#   loss.gamma: [1.0, 2.0]
+#   train.sampler: [weight]
+#   train.sampler_alpha: [0.25, 0.5, 1.0]
+
+# - loss.beta: [0.99]
+#   loss.gamma: [1.0]
+#   train.sampler: [weight]
+#   train.sampler_alpha: [0.5]
+#   loss.extra_weight: [{"Blast": 2.5, "Promyelocyte": 2.5}, {"Blast": 5.0, "Promyelocyte": 5.0}, {"Blast": 10., "Promyelocyte": 10., "IG": 3., "Erythroblast": 3.}]
+
+- seed: [0, 1, 2]
+  loss.beta: [0., 0.999, 0.9999]
+  loss.gamma: [0., 1., 2.]
+  loss.lambda_cost: [0.]
+  train.sampler_alpha: [0, 0.5, 1.]
+- seed: [0, 1, 2]
+  loss.beta: [0.999]
+  loss.gamma: [0.]
+  loss.lambda_cost: [1.]
+  train.sampler_alpha: [0.5, 1.]
+  loss.cost_matrix:
+    - [[0., 0.5, 1.], [4., 0., 1.], [10., 3., 0.]]
+    - [[0., 0.5, 1.], [2., 0., 1.], [4., 3., 0.]]
+    - [[0., 0.5, 1.], [2., 0., 1.], [6., 3., 0.]]
+    - [[0., 0.5, 1.], [2., 0., 1.], [4., 2., 0.]]
+    - [[0., 0.5, 1.], [2., 0., 1.], [4., 2., 1.]]
+- seed: [0, 1, 2]
+  loss.beta: [0.999]
+  loss.gamma: [2.]
+  loss.lambda_cost: [1.]
+  train.sampler_alpha: [0.]
+  loss.cost_matrix:
+    - [[0., 0.5, 1.], [4., 0., 1.], [10., 3., 0.]]
+    - [[0., 0.5, 1.], [2., 0., 1.], [4., 3., 0.]]
+    - [[0., 0.5, 1.], [2., 0., 1.], [6., 3., 0.]]
+    - [[0., 0.5, 1.], [2., 0., 1.], [4., 2., 0.]]
+    - [[0., 0.5, 1.], [2., 0., 1.], [4., 2., 1.]]
+- seed: [0, 1, 2]
+  loss.beta: [0.9999]
+  loss.gamma: [1.]
+  loss.lambda_cost: [1.]
+  train.sampler_alpha: [1.]
+  loss.cost_matrix:
+    - [[0., 0.5, 1.], [4., 0., 1.], [10., 3., 0.]]
+    - [[0., 0.5, 1.], [2., 0., 1.], [4., 3., 0.]]
+    - [[0., 0.5, 1.], [2., 0., 1.], [6., 3., 0.]]
+    - [[0., 0.5, 1.], [2., 0., 1.], [4., 2., 0.]]
+    - [[0., 0.5, 1.], [2., 0., 1.], [4., 2., 1.]]

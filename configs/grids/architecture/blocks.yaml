@@ -1,0 +1,37 @@
+model.architecture.blocks:
+
+    # =========================
+    # RÉFÉRENCE
+    # =========================
+    - [{depth: 2, channels: 32, kernel: 3}, {depth: 2, channels: 64, kernel: 3}]
+
+    # =========================
+    # NOMBRE DE BLOCKS
+    # =========================
+    # 1 block
+    - [{depth: 2, channels: 32, kernel: 3}]
+    # 3 blocks
+    - [{depth: 2, channels: 32, kernel: 3}, {depth: 2, channels: 64, kernel: 3}, {depth: 2, channels: 128, kernel: 3}]
+
+    # =========================
+    # PROFONDEUR
+    # =========================
+    # depth = 1
+    - [{depth: 1, channels: 32, kernel: 3}, {depth: 1, channels: 64, kernel: 3}]
+    # depth = 3
+    - [{depth: 3, channels: 32, kernel: 3}, {depth: 3, channels: 64, kernel: 3}]
+
+    # =========================
+    # CHANNELS
+    # =========================
+    # 16 → 32
+    - [{depth: 2, channels: 16, kernel: 3}, {depth: 2, channels: 32, kernel: 3}]
+    # 64 → 128
+    - [{depth: 2, channels: 64, kernel: 3}, {depth: 2, channels: 128, kernel: 3}]
+
+    # =========================
+    # KERNEL
+    # =========================
+    # kernel = 5
+    - [{depth: 2, channels: 32, kernel: 5}, {depth: 2, channels: 64, kernel: 5}]
+  

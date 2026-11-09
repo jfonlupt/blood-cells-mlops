@@ -1,0 +1,42 @@
+\section{Conclusion}
+
+Ce projet visait deux objectifs complémentaires : classer automatiquement les cellules sanguines selon dix types morphologiques, et ne manquer aucun cas critique (blaste, promyélocyte) susceptible de déclencher une prise en charge clinique en urgence.
+Il s'appuie sur la fusion de deux sources hétérogènes (Barcelone/PBC et Munich/LMU, 35\,457 images), dont le déséquilibre de classes et l'écart de domaine entre sites se sont révélés être les deux contraintes structurantes de l'ensemble du travail, de l'harmonisation des images jusqu'au choix des pertes, des métriques et des architectures.
+
+\paragraph{Difficultés rencontrées}
+
+Le \textbf{\emph{domain gap}} entre PBC et LMU s'est avéré la difficulté la plus persistante : aucune combinaison de transformations testée ne parvient à empêcher un classifieur de retrouver le site d'acquisition quasi parfaitement (\S~\ref{sec:pre-processing-feature-engineering}), et le diagnostic Grad-CAM du modèle hiérarchique (\S~\ref{sec:resultats-gradcam}) montre qu'un modèle peut encore s'appuyer sur des artefacts de compression liés au site plutôt que sur la morphologie cellulaire, y compris tard dans le pipeline.
+
+Nous avons également rencontré plusieurs problèmes méthodologiques pendant les grilles de recherche. Ils ont d’abord conduit à des résultats difficiles à interpréter, avant d’être identifiés et corrigés :
+\begin{itemize}
+  \item un \textbf{taux d'apprentissage trop élevé} peut faire diverger un entraînement (perte figée, prédiction constante) plutôt que le faire converger : un premier \emph{random search} sur la détection de site avait ainsi pris une vingtaine d'entraînements effondrés pour des harmonisations réussies (\S~\ref{sub:transfo}) ;
+  \item la \textbf{graine aléatoire} modifie sensiblement les résultats sur les classes rares (jusqu'à 0,18 de rappel critique d'écart entre seeds pour une même configuration, \S~\ref{sec:limites-loss}) : toute comparaison dont l'écart est inférieur à cette variance n'est pas interprétable sans réplication multi-seed appariée ;
+  \item la \textbf{calibration de la perte}, notamment de la matrice de coût (\S~\ref{sec:cout-clinique}), s'est révélée spécifique au déséquilibre réel des données plutôt que transposable telle quelle d'un jeu ou d'une taxonomie à l'autre.
+\end{itemize}
+
+Le temps de calcul a aussi limité certaines expérimentations : les deux grilles de recherche ont cumulé $\approx$27\,h de calcul (\S~\ref{sec:transfer-learning}), et le plus grand backbone testé (ViT-Base/16, 85,8\,M paramètres) comme le modèle hiérarchique (cinq backbones EfficientNet-B0 distincts, chacun ré-affiné séparément) illustrent le compromis entre capacité, complexité et budget de calcul disponible : un facteur qui a directement limité le nombre de backbones et de modèles de fondation spécialisés (DinoBloom notamment, \S~\ref{sec:transfer-learning}) qu'il a été impossible de tester.
+
+\paragraph{Utilisation d'assistants IA}
+
+Ce projet a mobilisé des assistants de codage et de rédaction basés sur des grands modèles de langage (\textbf{Claude}, \textbf{ChatGPT}), en appui à l'implémentation du framework d'expérimentation, au débogage et à la rédaction ainsi qu'à la mise à jour de ce rapport, sous relecture et validation de l'équipe à chaque étape.
+
+\paragraph{Objectifs atteints}
+
+La comparaison des trois approches finales (tableau~\ref{tab:comparaison-approches}) montre que le transfert d’apprentissage obtient le meilleur F1 macro parmi les trois : la \emph{baseline} sans pré-entraînement (F1 macro 0,916) est dépassée par le transfert d'apprentissage (0,949 pour le meilleur run), le modèle hiérarchique se situant entre les deux (0,944) sans offrir de gain de performance brute malgré une architecture plus coûteuse (\S~\ref{sec:baseline}--\S~\ref{sec:modele-hierarchique}).
+Rapportée aux références publiées (\S~\ref{sec:comparaison-litterature}), notre meilleure configuration ($\approx$96,2\,\% d'accuracy) se situe dans la fourchette haute des travaux fondateurs sur PBC seul ($\approx$96\,\%) et en retrait des travaux les plus récents sur PBC seul (98--98,6\,\%) : un écart cohérent avec la difficulté supplémentaire de la fusion PBC/LMU plutôt qu'avec le choix d'architecture.
+
+La performance globale n’est cependant pas le seul critère retenu. La perte, les métriques et l’architecture ont toutes été choisies en tenant compte de l’objectif principal : \textbf{limiter les erreurs sur les cellules critiques}.
+La \textbf{perte} (\S~\ref{sec:loss}) combine pondération par effectif, terme focal et matrice de coût clinique (\S~\ref{sec:cout-clinique}) pour pénaliser plus fortement une confusion critique$\to$normal qu'une fausse alerte.
+Les \textbf{métriques} dédiées (rappel critique minimum et groupé, AP de criticité, courbe de \emph{screening} ; \S~\ref{sub:metriques}) mesurent directement cette capacité de tri, plutôt qu'une accuracy globale trompeuse en contexte déséquilibré.
+L'\textbf{architecture}, enfin, y contribue à son tour : le transfert d'apprentissage relève le rappel critique groupé de 0,950 (\emph{baseline}) à 0,963 (meilleur run), et le modèle hiérarchique propose une alternative structurellement différente, un rejet calibré niveau par niveau plutôt qu'un seuil global unique (\S~\ref{sec:resultats-hierarchique}), qui rapproche encore la décision automatique du geste clinique réel (envoyer en relecture humaine plutôt que trancher à tort).
+
+\paragraph{Perspectives}
+
+Plusieurs pistes identifiées en cours de projet restent à explorer :
+\begin{itemize}
+  \item tester \textbf{DinoBloom} \parencite{koch2024dinobloom}, le modèle de fondation spécifique à l'hématologie laissé de côté faute de budget de calcul (\S~\ref{sec:transfer-learning}), en extracteur figé puis en fine-tuning léger ;
+  \item élargir l'évaluation à \textbf{d'autres jeux de données} publics d'hématologie, pour tester la généralisation au-delà des deux sources fusionnées et isoler la part du \emph{domain gap} imputable à PBC/LMU spécifiquement plutôt qu'aux cellules sanguines en général ;
+  \item formaliser la \textbf{calibration des seuils de décision}, déjà esquissée pour la \emph{baseline} (courbe de \emph{screening}, \S~\ref{sub:metriques}) et pour le modèle hiérarchique (rejet par niveau, \S~\ref{sec:resultats-hierarchique}), sur l'ensemble des approches, avec un protocole de calibration et de validation explicite plutôt qu'un réglage ponctuel ;
+  \item mener le test de contrôle \og PBC contre LMU \fg{} déjà anticipé (\S~\ref{sec:pre-processing-feature-engineering}, \S~\ref{sec:resultats-gradcam}), pour isoler la part du score de la classe \emph{IG} imputable aux artefacts de compression plutôt qu'à la morphologie cellulaire ;
+  \item évaluer une adaptation de domaine explicite (DANN \parencite{ganin2016dann} ou alignement de features cross-site) pour s'attaquer directement au \emph{domain gap} plutôt que de le contourner par l'harmonisation (\S~\ref{sec:transfer-learning}).
+\end{itemize}

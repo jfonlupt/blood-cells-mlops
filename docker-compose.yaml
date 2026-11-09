@@ -1,0 +1,425 @@
+x-airflow-common: &airflow-common
+  # Pas de `build:` ici : hérité par les 4 services airflow-* via `<<:
+  # *airflow-common`, ça déclenchait un build redondant par service et
+  # chacun re-taguait blood_cells_airflow:latest sur son propre résultat --
+  # les conteneurs démarrés à partir d'un build plus ancien se retrouvaient
+  # avec une image différente de celle du tag (visible dans `docker
+  # container ls` : IMAGE affiche un ID brut au lieu du nom). `build:` est
+  # donc déclaré uniquement sur airflow-init ci-dessous, qui démarre
+  # toujours en premier (les 4 autres services en dépendent via
+  # `condition: service_completed_successfully`) : il construit l'image une
+  # seule fois, les autres réutilisent ensuite le tag sans rebuild.
+  image: ${AIRFLOW_IMAGE_NAME:-blood_cells_airflow:latest}
+  environment: &airflow-common-env
+    AIRFLOW__CORE__EXECUTOR: CeleryExecutor
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+    AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
+    AIRFLOW__CELERY__BROKER_URL: redis://:@redis:6379/0
+    AIRFLOW__CORE__FERNET_KEY: ""
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__API__AUTH_BACKEND: "airflow.api.auth.backend.basic_auth"
+    # Depuis Airflow 3, les workers n'accèdent plus à la DB directement : ils
+    # appellent l'Execution API servie par le composant api-server (service
+    # airflow-webserver ci-dessous). Le code qui exécute réellement les
+    # tâches (airflow.executors.base_executor.get_execution_api_server_url)
+    # lit CETTE clé précise -- [core] execution_api_server_url -- et PAS
+    # [execution_api] execution_api_server_url (qui existe aussi, mais n'est
+    # lue que par d'autres chemins comme `airflow tasks test`). Laissée
+    # vide, elle retombe sur http://localhost:8080/execution/ -- localhost,
+    # dans le conteneur airflow-worker, désigne le worker lui-même et non
+    # airflow-webserver, d'où un ConnectError/Connection refused sur
+    # TOUTE tâche exécutée via Celery (ex. check_drift_and_new_data),
+    # identique avec prefork ou solo pool (vérifié) puisque ce n'est pas un
+    # problème de fork/concurrence mais bien de mauvaise clé de config lue.
+    AIRFLOW__CORE__EXECUTION_API_SERVER_URL: "http://airflow-webserver:8080/execution/"
+    # has_new_data_since_last_training/latest_commit_touching
+    # (dags/retrain_on_drift.py, via src/experiments/retrain_trigger.py)
+    # lancent `git log`/`git merge-base` sur /opt/airflow/repo. Git y
+    # détecte une "dubious ownership" (observé en pratique : le check
+    # échoue systématiquement dans le process de tâche réel bien que
+    # l'UID du process corresponde à celui du propriétaire des fichiers --
+    # vraisemblablement un artefact du bind mount via virtiofs/osxfs sous
+    # Docker Desktop) et refuse d'opérer dessus par sécurité, avec
+    # `fatal: detected dubious ownership in repository at
+    # '/opt/airflow/repo'`. On déclare une exception explicite via les
+    # variables GIT_CONFIG_* (équivalent à `git config --global --add
+    # safe.directory /opt/airflow/repo`, mais sans dépendre d'un $HOME/
+    # fichier de config partagé entre les sous-process).
+    GIT_CONFIG_COUNT: "1"
+    GIT_CONFIG_KEY_0: "safe.directory"
+    GIT_CONFIG_VALUE_0: "/opt/airflow/repo"
+    # Sans secret fixe ici, chaque conteneur airflow-* génère au démarrage
+    # son propre secret JWT aléatoire (airflow/api_fastapi/auth/tokens.py,
+    # get_signing_key avec make_secret_key_if_needed=True) : le token émis
+    # par l'un n'est alors jamais reconnu par un autre, d'où un
+    # ServerResponseError("Invalid auth token") sur toute tâche, même une
+    # fois la connectivité réseau vers l'Execution API réglée. Valeur à
+    # définir dans .env (cf. .env.example) : openssl rand -base64 32.
+    AIRFLOW__API_AUTH__JWT_SECRET: "${AIRFLOW_JWT_SECRET}"
+    # AIRFLOW__SMTP__SMTP_HOST: "smtp.gmail.com"
+    # AIRFLOW__SMTP__SMTP_PORT: 587
+    # AIRFLOW__SMTP__SMTP_USER: "de.airflow@gmail.com"
+    # AIRFLOW__SMTP__SMTP_PASSWORD: "cfsrvkongsobheta"
+    # AIRFLOW__SMTP__SMTP_MAIL_FROM: "de.airflow@gmail.com"
+
+    # Code du projet monté (pas copié) depuis ./ -> /opt/airflow/repo (cf.
+    # volumes ci-dessous) : PYTHONPATH le rend importable par
+    # check_drift_and_new_data/promote (dags/retrain_on_drift.py) sans
+    # avoir à reconstruire blood_cells_airflow à chaque changement de code.
+    PYTHONPATH: /opt/airflow/repo
+    # Lues par dags/retrain_on_drift.py (valeurs par défaut documentées
+    # dans ce fichier ; cf. son en-tête pour le détail de chaque variable).
+    RETRAIN_PROMETHEUS_URL: "http://prometheus:9090"
+    RETRAIN_MODEL_NAME: "densenet121-type"
+    RETRAIN_EXPERIMENT_NAME: "blood_cells-type"
+    RETRAIN_REPO_DIR: "/opt/airflow/repo"
+    # Nom du réseau docker-compose de ce projet (vérifié via `docker network
+    # ls` : par défaut `<nom-du-dossier-projet>_default`) -- à adapter si le
+    # projet est renommé ou si COMPOSE_PROJECT_NAME est surchargé.
+    RETRAIN_DOCKER_NETWORK: "${RETRAIN_DOCKER_NETWORK:-jul26_bds_blood_cells_default}"
+    # Chemins HÔTE (résolus par le démon Docker via docker.sock, PAS les
+    # chemins vus depuis les conteneurs airflow-*) pour les mounts du
+    # conteneur d'entraînement lancé par DockerOperator. ${PWD} n'est
+    # correct que si `docker compose up` est lancé depuis la racine du
+    # dépôt -- préférer des chemins absolus fixes dans `.env` sinon.
+    RETRAIN_HOST_CONFIGS_DIR: "${PWD}/configs"
+    RETRAIN_HOST_DATA_DIR: "${PWD}/data"
+    RETRAIN_HOST_RESULTS_DIR: "${PWD}/results"
+    MLFLOW_TRACKING_URI: "http://mlflow:${MLFLOW_PORT}"
+    MLFLOW_ARTIFACT_URI: "s3://${MLFLOW_ARTFACT_BUCKET}"
+    MLFLOW_S3_ENDPOINT_URL: "http://minio:${MINIO_PORT}"
+    AWS_ACCESS_KEY_ID: "${MINIO_ROOT_USER}"
+    AWS_SECRET_ACCESS_KEY: "${MINIO_ROOT_PASSWORD}"
+  volumes:
+    - ./dags:/opt/airflow/dags
+    - ./logs:/opt/airflow/logs
+    - ./plugins:/opt/airflow/plugins
+    # DockerOperator (tâche `train`) parle au démon Docker hôte via ce socket.
+    - /var/run/docker.sock:/var/run/docker.sock
+    # Dépôt complet (avec .git) : has_new_data_since_last_training /
+    # latest_commit_touching (dags/retrain_on_drift.py) lancent `git log` /
+    # `git merge-base` en sous-processus sur ce chemin.
+    - .:/opt/airflow/repo:ro
+  # user: "${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-50000}"
+  user: "${AIRFLOW_UID:-50000}:0"
+  depends_on:
+    redis:
+      condition: service_healthy
+    postgres:
+      condition: service_healthy
+
+services:
+  minio:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile.minio
+    container_name: minio_server
+    restart: always
+    ports:
+      - "${MINIO_PORT}:9000"
+      - "${MINIO_CONSOLE_PORT}:9001"
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+      - MINIO_PORT=${MINIO_PORT}
+      - MINIO_CONSOLE_PORT=${MINIO_CONSOLE_PORT}
+      - MLFLOW_ARTFACT_BUCKET=${MLFLOW_ARTFACT_BUCKET}
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  mlflow:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile.mlflow
+    container_name: mlflow_server
+    restart: always
+    ports:
+      - "${MLFLOW_PORT}:${MLFLOW_PORT}"
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:${MLFLOW_PORT}
+      - MLFLOW_ARTIFACT_URI=s3://${MLFLOW_ARTFACT_BUCKET}
+      - AWS_ACCESS_KEY_ID=${MINIO_ROOT_USER}
+      - AWS_SECRET_ACCESS_KEY=${MINIO_ROOT_PASSWORD}
+      - MLFLOW_S3_ENDPOINT_URL=http://minio:${MINIO_PORT}
+      - MLFLOW_SERVER_ALLOWED_HOSTS=mlflow:*,localhost:*,127.0.0.1:*
+    volumes:
+      - mlflow_data:/mlflow
+    depends_on:
+      minio:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python3",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:${MLFLOW_PORT}/health')",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+  blood_cells_server:
+    image: blood_cells_service:latest
+    container_name: blood_cells_server
+    ports:
+      - "${BENTO_PORT}:3000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:3000/readyz')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      mlflow:
+        condition: service_healthy
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:${MLFLOW_PORT}
+      - BENTO_USER=$BENTO_USER
+      - BENTO_PASSWORD=$BENTO_PASSWORD
+      - JWT_SECRET_KEY=$JWT_SECRET_KEY
+      - AWS_ACCESS_KEY_ID=${MINIO_ROOT_USER}
+      - AWS_SECRET_ACCESS_KEY=${MINIO_ROOT_PASSWORD}
+      - MLFLOW_S3_ENDPOINT_URL=http://minio:${MINIO_PORT}
+
+  blood_cells_training:
+    # Profil dédié : ce service lance directement un entraînement via son
+    # entrypoint (smoke test test_base.yaml/test_mlflow) -- `docker compose
+    # up -d` sans argument ne doit pas le démarrer. En usage réel, le DAG
+    # retrain_on_drift ne passe pas par ce service : DockerOperator lance un
+    # conteneur `docker run` à part à partir de l'image blood_cells_training.
+    # Pour lancer ce smoke test manuellement : `docker compose --profile
+    # manual-training up -d blood_cells_training`.
+    profiles: ["manual-training"]
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        MLFOW_PORT : ${MLFLOW_PORT}
+        GIT_COMMIT: ${GIT_COMMIT:-unknown}
+    image: blood_cells_training:latest
+    container_name: blood_cells_training
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:${MLFLOW_PORT}
+      - MLFLOW_ARTIFACT_URI=s3://${MLFLOW_ARTFACT_BUCKET}
+      - AWS_ACCESS_KEY_ID=${MINIO_ROOT_USER}
+      - AWS_SECRET_ACCESS_KEY=${MINIO_ROOT_PASSWORD}
+      - MLFLOW_S3_ENDPOINT_URL=http://minio:${MINIO_PORT}
+      - DATA_DIR=/app/data
+    entrypoint: ["python", "-m", "src.experiments.run", "--config", "/app/config/test_base.yaml", "--name", "test_mlflow"]
+    volumes:
+      - ./results:/app/results
+      - ./configs:/app/config
+      - ./data:/app/data
+    depends_on:
+      mlflow:
+        condition: service_healthy
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    restart: always
+    pid: host
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--path.rootfs=/rootfs'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./deployment/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./deployment/prometheus/rules:/etc/prometheus/rules
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    restart: always
+    depends_on:
+      - node-exporter
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "9091:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./deployment/grafana/provisioning:/etc/grafana/provisioning
+      - ./deployment/grafana/dashboards:/etc/grafana/dashboards
+    depends_on:
+      - prometheus
+    restart: always
+
+  postgres:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres-db-volume:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 5s
+      retries: 5
+    restart: always
+
+  redis:
+    image: redis:8
+    ports:
+      - 6379:6379
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 30s
+      retries: 50
+    restart: always
+
+  airflow-webserver:
+    <<: *airflow-common
+    command: api-server
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+    ports:
+      - 8080:8080
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/api/v2/monitor/health"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    restart: always
+
+  airflow-scheduler:
+    <<: *airflow-common
+    command: scheduler
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+      # Sans ça, ce service peut démarrer (et le scheduler/dag-processor/
+      # worker commencer à planifier/exécuter des tâches) avant que
+      # airflow-webserver (qui sert l'Execution API que ces composants
+      # appellent) ne soit prêt -- vu en pratique : les 2 premières
+      # exécutions de check_drift_and_new_data après un `docker compose up
+      # -d` ont échoué avec ConnectError/Connection refused, le temps que
+      # l'api-server finisse son démarrage (~3 min, healthcheck interval
+      # 10s x 5 retries).
+      airflow-webserver:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'airflow jobs check --job-type SchedulerJob --hostname "$${HOSTNAME}"',
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    restart: always
+
+  # Depuis Airflow 3, le parsing des DAGs n'est plus fait par le scheduler
+  # lui-même : un composant séparé (`airflow dag-processor`) est obligatoire,
+  # sinon le dossier dags/ n'est jamais scanné (dags list et
+  # list-import-errors restent vides en permanence, sans aucune erreur).
+  airflow-dag-processor:
+    <<: *airflow-common
+    command: dag-processor
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+      airflow-webserver:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'airflow jobs check --job-type DagProcessorJob --hostname "$${HOSTNAME}"',
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    restart: always
+
+  airflow-worker:
+    <<: *airflow-common
+    command: celery worker
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+      airflow-webserver:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - "CMD-SHELL"
+        - 'celery --app airflow.providers.celery.executors.celery_executor.app inspect ping -d "celery@$${HOSTNAME}"'
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    restart: always
+
+  airflow-init:
+    <<: *airflow-common
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.airflow
+    command: version
+    environment:
+      <<: *airflow-common-env
+      _AIRFLOW_DB_UPGRADE: "true"
+      _AIRFLOW_WWW_USER_CREATE: "true"
+      _AIRFLOW_WWW_USER_USERNAME: ${_AIRFLOW_WWW_USER_USERNAME:-airflow}
+      _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-airflow}
+
+  flower:
+    <<: *airflow-common
+    command: celery flower
+    ports:
+      - 5555:5555
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:5555/"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    restart: always
+
+volumes:
+  minio_data:
+  mlflow_data:
+  prometheus_data:
+  grafana_data:
+  postgres-db-volume:

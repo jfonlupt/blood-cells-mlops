@@ -1,0 +1,10 @@
+# Numerotation des figures
+A répartition classes
+B aux de désaccord
+C dimensions fichiers
+D poids fichiers
+E brightness/lum 
+F circularité
+G perimetre
+H sharpness
+I photos cellules

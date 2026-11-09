@@ -1,0 +1,2 @@
+model.architecture.use_batchnorm : [true, false]
+model.architecture.use_gap : [true, false]

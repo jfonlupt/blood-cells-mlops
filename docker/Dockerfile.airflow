@@ -1,0 +1,66 @@
+# Image Airflow étendue pour le DAG retrain_on_drift : ajoute le provider
+# Docker (nécessaire à DockerOperator, qui lance le conteneur
+# blood_cells_training:latest) et les dépendances runtime du projet dont
+# ont besoin les tâches check_drift_and_new_data/promote -- elles tournent
+# DANS cette image (sur airflow-worker), pas dans le conteneur
+# d'entraînement séparé lancé via docker/Dockerfile.
+#
+# NB version Python : cette image embarque la version Python livrée par
+# l'image officielle apache/airflow (actuellement 3.13), alors que
+# pyproject.toml exige >=3.14 -- uv.lock est résolu pour 3.14 et donc
+# inutilisable tel quel ici. On installe donc les paquets ci-dessous via pip
+# directement, aux mêmes bornes que pyproject.toml, plutôt que via
+# `uv sync --locked`. Si une résolution casse sous la version Python de
+# l'image Airflow, ajuster la borne ici uniquement : ce fichier n'affecte
+# pas l'image d'entraînement/serving (docker/Dockerfile), qui reste sur
+# Python 3.14.
+#
+# Le code du projet (src/) n'est volontairement pas copié dans l'image : il
+# est monté en direct depuis le dépôt (docker-compose.yaml monte
+# `.:/opt/airflow/repo:ro` et ajoute ce chemin à PYTHONPATH), pour ne pas
+# avoir à reconstruire cette image à chaque changement de code.
+ARG AIRFLOW_VERSION=3.3.2
+ARG PYTHON_VERSION=3.13
+
+FROM apache/airflow:${AIRFLOW_VERSION}
+
+ARG AIRFLOW_VERSION
+ARG PYTHON_VERSION
+
+USER airflow
+
+# Contrainte Airflow : évite qu'installer ce provider ne dérive les
+# versions des dépendances d'Airflow lui-même (SQLAlchemy, pydantic, etc.).
+RUN pip install --no-cache-dir \
+    --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-${AIRFLOW_VERSION}/constraints-${PYTHON_VERSION}.txt" \
+    apache-airflow-providers-docker
+
+# Dépendances runtime du projet (surface réellement importée par
+# src/experiments/retrain_trigger.py et src/experiments/promotion.py, en
+# remontant leur chaîne d'imports : src.config, src.experiments.tracking,
+# src.features.{dataframe,dataset,transform}, src.models.metrics,
+# src.models.transfer, src.training.trainer, et -- via promotion.py ->
+# src.experiments.inference -> src.experiments.runner (pour
+# seed_everything) -- coolname, importé par runner.py pour generate_slug
+# bien que seed_everything ne s'en serve pas). Pas de --constraint ici :
+# ces paquets ne sont pas des dépendances d'Airflow, la contrainte
+# ci-dessus ne les couvre pas.
+RUN pip install --no-cache-dir \
+    "torch>=2.13" \
+    "torchvision>=0.28" \
+    "torchmetrics>=1.9" \
+    "torchstain>=1.4" \
+    "kornia>=0.8" \
+    "timm>=1.0.29" \
+    "numpy>=2.5" \
+    "pandas==3.0.5" \
+    "matplotlib>=3.11" \
+    "seaborn>=0.13" \
+    "pillow>=12" \
+    "tqdm>=4.70" \
+    "pyyaml>=6" \
+    "pydantic>=2" \
+    "mlflow-skinny>=3" \
+    "boto3>=1.40" \
+    "requests>=2.32" \
+    "coolname>=2"

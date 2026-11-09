@@ -1,0 +1,452 @@
+% Bibliographie du projet Blood Cells Classification.
+% Sources :
+%   - rapport_fusion.md (§5 Bibliographie)
+%   - rapport_scheduler_early_stopping.md (§8 Bibliographie)
+%   - rapport_transformation_augmentation.md (§7 Bibliographie)
+%   - exploration.md (notes de bas de page)
+%   - modeles_comparaison_etat_de_lart.md (§Bibliographie) -- section "État de l'art" ci-dessous
+% Seules les entrées effectivement citées dans report.tex apparaissent dans le PDF.
+
+% =============================================================
+% Datasets
+% =============================================================
+
+@misc{acevedo2020mendeley,
+  author       = {Acevedo, Andrea and Merino, Anna and Alf{\'e}rez, Santiago and Molina, {\'A}ngel and Bold{\'u}, Laura and Rodellar, Jos{\'e}},
+  title        = {A dataset for microscopic peripheral blood cell images for development of automatic recognition systems},
+  year         = {2020},
+  howpublished = {Mendeley Data, V1},
+  doi          = {10.17632/snkd93bnjr.1}
+}
+
+@article{acevedo2020dib,
+  author  = {Acevedo, Andrea and Merino, Anna and Alf{\'e}rez, Santiago and Molina, {\'A}ngel and Bold{\'u}, Laura and Rodellar, Jos{\'e}},
+  title   = {A dataset of microscopic peripheral blood cell images for development of automatic recognition systems},
+  journal = {Data in Brief},
+  volume  = {30},
+  pages   = {105474},
+  year    = {2020},
+  doi     = {10.1016/j.dib.2020.105474}
+}
+
+@misc{matek2019tcia,
+  author       = {Matek, Christian and Schwarz, Simone and Marr, Carsten and Spiekermann, Karsten},
+  title        = {A Single-cell Morphological Dataset of Leukocytes from {AML} Patients and Non-malignant Controls},
+  year         = {2019},
+  howpublished = {The Cancer Imaging Archive (TCIA)},
+  doi          = {10.7937/tcia.2019.36f5o9ld}
+}
+
+@article{matek2019nmi,
+  author  = {Matek, Christian and Schwarz, Simone and Spiekermann, Karsten and Marr, Carsten},
+  title   = {Human-level recognition of blast cells in acute myeloid leukaemia with convolutional neural networks},
+  journal = {Nature Machine Intelligence},
+  volume  = {1},
+  pages   = {538--544},
+  year    = {2019},
+  doi     = {10.1038/s42256-019-0101-9}
+}
+
+% =============================================================
+% Contexte applicatif (classification de cellules sanguines par CNN)
+% =============================================================
+
+@article{acevedo2019cnn,
+  author  = {Acevedo, Andrea and Alf{\'e}rez, Santiago and Merino, Anna and Puigv{\'i}, Laura and Rodellar, Jos{\'e}},
+  title   = {Recognition of peripheral blood cell images using convolutional neural networks},
+  journal = {Computer Methods and Programs in Biomedicine},
+  volume  = {180},
+  pages   = {105020},
+  year    = {2019},
+  doi     = {10.1016/j.cmpb.2019.105020}
+}
+
+% =============================================================
+% Rééquilibrage des classes / apprentissage sensible au coût
+% =============================================================
+
+@inproceedings{cui2019classbalanced,
+  author    = {Cui, Yin and Jia, Menglin and Lin, Tsung-Yi and Song, Yang and Belongie, Serge},
+  title     = {Class-Balanced Loss Based on Effective Number of Samples},
+  booktitle = {IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  pages     = {9268--9277},
+  year      = {2019},
+  eprint    = {1901.05555},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{lin2017focal,
+  author    = {Lin, Tsung-Yi and Goyal, Priya and Girshick, Ross and He, Kaiming and Doll{\'a}r, Piotr},
+  title     = {Focal Loss for Dense Object Detection},
+  booktitle = {IEEE International Conference on Computer Vision (ICCV)},
+  year      = {2017},
+  eprint    = {1708.02002},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{elkan2001costsensitive,
+  author    = {Elkan, Charles},
+  title     = {The Foundations of Cost-Sensitive Learning},
+  booktitle = {International Joint Conference on Artificial Intelligence (IJCAI)},
+  year      = {2001},
+  url       = {https://cseweb.ucsd.edu/~elkan/rescale.pdf}
+}
+
+@inproceedings{kukar1998costsensitive,
+  author    = {Kukar, Matja{\v{z}} and Kononenko, Igor},
+  title     = {Cost-Sensitive Learning with Neural Networks},
+  booktitle = {European Conference on Artificial Intelligence (ECAI)},
+  year      = {1998}
+}
+
+@inproceedings{kang2020decoupling,
+  author    = {Kang, Bingyi and Xie, Saining and Rohrbach, Marcus and Yan, Zhicheng and Gordo, Albert and Feng, Jiashi and Kalantidis, Yannis},
+  title     = {Decoupling Representation and Classifier for Long-Tailed Recognition},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2020},
+  eprint    = {1910.09217},
+  archivePrefix = {arXiv}
+}
+
+% =============================================================
+% Optimiseur, learning rate scheduling / early stopping
+% =============================================================
+
+@incollection{bottou2010sgd,
+  author    = {Bottou, L{\'e}on},
+  title     = {Large-Scale Machine Learning with Stochastic Gradient Descent},
+  booktitle = {Proceedings of COMPSTAT'2010},
+  editor    = {Lechevallier, Yves and Saporta, Gilbert},
+  publisher = {Physica-Verlag HD},
+  year      = {2010},
+  pages     = {177--186}
+}
+
+@inproceedings{kingma2015adam,
+  author        = {Kingma, Diederik P. and Ba, Jimmy},
+  title         = {Adam: A Method for Stochastic Optimization},
+  booktitle     = {International Conference on Learning Representations (ICLR)},
+  year          = {2015},
+  eprint        = {1412.6980},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{loshchilov2019decoupled,
+  author        = {Loshchilov, Ilya and Hutter, Frank},
+  title         = {Decoupled Weight Decay Regularization},
+  booktitle     = {International Conference on Learning Representations (ICLR)},
+  year          = {2019},
+  note          = {AdamW},
+  eprint        = {1711.05101},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{smith2017cyclical,
+  author    = {Smith, Leslie N.},
+  title     = {Cyclical Learning Rates for Training Neural Networks},
+  booktitle = {IEEE Winter Conference on Applications of Computer Vision (WACV)},
+  year      = {2017}
+}
+
+@techreport{smith2018disciplined,
+  author      = {Smith, Leslie N.},
+  title       = {A disciplined approach to neural network hyper-parameters: Part 1 -- learning rate, batch size, momentum, and weight decay},
+  institution = {US Naval Research Laboratory},
+  year        = {2018},
+  note        = {One-Cycle policy},
+  eprint      = {1803.09820},
+  archivePrefix = {arXiv}
+}
+
+@inproceedings{loshchilov2017sgdr,
+  author    = {Loshchilov, Ilya and Hutter, Frank},
+  title     = {{SGDR}: Stochastic Gradient Descent with Warm Restarts},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2017},
+  note      = {Cosine annealing},
+  eprint    = {1608.03983},
+  archivePrefix = {arXiv}
+}
+
+@misc{pytorchoptim,
+  author       = {{PyTorch}},
+  title        = {torch.optim --- How to adjust learning rate},
+  year         = {2024},
+  howpublished = {\url{https://pytorch.org/docs/stable/optim.html}},
+  note         = {Documentation en ligne}
+}
+
+@incollection{prechelt1998earlystopping,
+  author    = {Prechelt, Lutz},
+  title     = {Early Stopping --- But When?},
+  booktitle = {Neural Networks: Tricks of the Trade},
+  editor    = {Orr, Genevieve B. and M{\"u}ller, Klaus-Robert},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {1524},
+  pages     = {55--69},
+  publisher = {Springer},
+  year      = {1998}
+}
+
+@book{goodfellow2016deeplearning,
+  author    = {Goodfellow, Ian and Bengio, Yoshua and Courville, Aaron},
+  title     = {Deep Learning},
+  publisher = {MIT Press},
+  year      = {2016},
+  note      = {Chap. 7.8 (Early Stopping) et 8.3 (learning rate)}
+}
+
+% =============================================================
+% Outils
+% =============================================================
+
+@misc{torchvision,
+  author       = {{TorchVision maintainers}},
+  title        = {TorchVision: PyTorch's Computer Vision library (transforms.v2)},
+  year         = {2016},
+  howpublished = {\url{https://github.com/pytorch/vision}}
+}
+
+@misc{torchstain,
+  author       = {Barbano, Carlo Alberto and others},
+  title        = {torchstain: stain normalization tools for PyTorch, TensorFlow and NumPy},
+  year         = {2021},
+  howpublished = {\url{https://github.com/EIDOSLAB/torchstain}}
+}
+
+@inproceedings{riba2020kornia,
+  author    = {Riba, Edgar and Mishkin, Dmytro and Ponsa, Daniel and Rublee, Ethan and Bradski, Gary},
+  title     = {Kornia: an Open Source Differentiable Computer Vision Library for PyTorch},
+  booktitle = {IEEE Winter Conference on Applications of Computer Vision (WACV)},
+  year      = {2020},
+  doi       = {10.1109/WACV45572.2020.9093363}
+}
+
+% =============================================================
+% Normalisation de coloration et de couleur
+% =============================================================
+
+@article{tellez2019quantifying,
+  author  = {Tellez, David and Litjens, Geert and B{\'a}ndi, P{\'e}ter and Bulten, Wouter and Bokhorst, John-Melle and Ciompi, Francesco and van der Laak, Jeroen},
+  title   = {Quantifying the effects of data augmentation and stain color normalization in convolutional neural networks for computational pathology},
+  journal = {Medical Image Analysis},
+  volume  = {58},
+  pages   = {101544},
+  year    = {2019},
+  doi     = {10.1016/j.media.2019.101544}
+}
+
+@article{reinhard2001colortransfer,
+  author  = {Reinhard, Erik and Ashikhmin, Michael and Gooch, Bruce and Shirley, Peter},
+  title   = {Color Transfer between Images},
+  journal = {IEEE Computer Graphics and Applications},
+  volume  = {21},
+  number  = {5},
+  pages   = {34--41},
+  year    = {2001},
+  doi     = {10.1109/38.946629}
+}
+
+@article{roy2018colornorm,
+  author  = {Roy, Santanu and Kumar Jain, Aditya and Lal, Shyam and Kini, Jyoti},
+  title   = {A study about color normalization methods for histopathology images},
+  journal = {Micron},
+  volume  = {114},
+  pages   = {42--61},
+  year    = {2018},
+  doi     = {10.1016/j.micron.2018.07.005},
+  note    = {Reinhard << modifi{\'e} >> avec masque tissu/fond}
+}
+
+@incollection{zuiderveld1994clahe,
+  author    = {Zuiderveld, Karel},
+  title     = {Contrast Limited Adaptive Histogram Equalization},
+  booktitle = {Graphics Gems IV},
+  editor    = {Heckbert, Paul S.},
+  publisher = {Academic Press},
+  pages     = {474--485},
+  year      = {1994}
+}
+
+@article{pizer1987ahe,
+  author  = {Pizer, Stephen M. and Amburn, E. Philip and Austin, John D. and others},
+  title   = {Adaptive histogram equalization and its variations},
+  journal = {Computer Vision, Graphics, and Image Processing},
+  volume  = {39},
+  number  = {3},
+  pages   = {355--368},
+  year    = {1987},
+  doi     = {10.1016/S0734-189X(87)80186-X}
+}
+
+@inproceedings{macenko2009normalizing,
+  author    = {Macenko, Marc and Niethammer, Marc and Marron, J. S. and Borland, David and Woosley, John T. and Guan, Xiaojun and Schmitt, Charles and Thomas, Nancy E.},
+  title     = {A method for normalizing histology slides for quantitative analysis},
+  booktitle = {IEEE International Symposium on Biomedical Imaging (ISBI)},
+  pages     = {1107--1110},
+  year      = {2009},
+  doi       = {10.1109/ISBI.2009.5193250}
+}
+
+@article{vahadane2016structurepreserving,
+  author  = {Vahadane, Abhishek and Peng, Tingying and Sethi, Amit and others},
+  title   = {Structure-Preserving Color Normalization and Sparse Stain Separation for Histological Images},
+  journal = {IEEE Transactions on Medical Imaging},
+  volume  = {35},
+  number  = {8},
+  pages   = {1962--1971},
+  year    = {2016},
+  doi     = {10.1109/TMI.2016.2529665}
+}
+
+% =============================================================
+% Data augmentation
+% =============================================================
+
+@article{shorten2019survey,
+  author  = {Shorten, Connor and Khoshgoftaar, Taghi M.},
+  title   = {A survey on Image Data Augmentation for Deep Learning},
+  journal = {Journal of Big Data},
+  volume  = {6},
+  pages   = {60},
+  year    = {2019},
+  doi     = {10.1186/s40537-019-0197-0}
+}
+
+@article{chicco2020mcc,
+  author  = {Chicco, Davide and Jurman, Giuseppe},
+  title   = {The advantages of the {Matthews} correlation coefficient ({MCC}) over {F1} score and accuracy in binary classification evaluation},
+  journal = {BMC Genomics},
+  volume  = {21},
+  pages   = {6},
+  year    = {2020},
+  doi     = {10.1186/s12864-019-6413-7}
+}
+
+@article{saito2015prc,
+  author  = {Saito, Takaya and Rehmsmeier, Marc},
+  title   = {The Precision-Recall Plot Is More Informative than the {ROC} Plot When Evaluating Binary Classifiers on Imbalanced Datasets},
+  journal = {PLoS ONE},
+  volume  = {10},
+  number  = {3},
+  pages   = {e0118432},
+  year    = {2015},
+  doi     = {10.1371/journal.pone.0118432}
+}
+
+@misc{grandini2020metrics,
+  author        = {Grandini, Margherita and Bagli, Enrico and Visani, Giorgio},
+  title         = {Metrics for Multi-Class Classification: an Overview},
+  year          = {2020},
+  eprint        = {2008.05756},
+  archivePrefix = {arXiv}
+}
+
+% =============================================================
+% État de l'art / modèles de comparaison
+% (voir modeles_comparaison_etat_de_lart.md ; non encore cités dans report.tex)
+% =============================================================
+
+% Travaux sur les mêmes jeux de données (Acevedo-20 / Matek-19)
+@inproceedings{salehi2022crossdomain,
+  author    = {Salehi, Raheleh and Sadafi, Ario and Gruber, Armin and Lienemann, Peter and Navab, Nassir and Albarqouni, Shadi and Marr, Carsten},
+  title     = {Unsupervised Cross-Domain Feature Extraction for Single Blood Cell Image Classification},
+  booktitle = {Medical Image Computing and Computer Assisted Intervention (MICCAI 2022)},
+  series    = {Lecture Notes in Computer Science},
+  pages     = {739--748},
+  year      = {2022},
+  publisher = {Springer},
+  doi       = {10.1007/978-3-031-16437-8_71}
+}
+
+@inproceedings{sadafi2023continual,
+  author        = {Sadafi, Ario and Salehi, Raheleh and Gruber, Armin and Shetab Boushehri, Sayedali and Giehr, Pascal and Navab, Nassir and Marr, Carsten},
+  title         = {A Continual Learning Approach for Cross-Domain White Blood Cell Classification},
+  booktitle     = {Domain Adaptation and Representation Transfer (DART), MICCAI 2023 Workshop},
+  year          = {2023},
+  publisher     = {Springer},
+  eprint        = {2308.12679},
+  archivePrefix = {arXiv}
+}
+
+@article{gao2025danet,
+  author  = {Gao, Wenpeng and Lan, Liantao and Fan, Xiaomao},
+  title   = {{DaNet}: Domain-adaptive white blood cell classification through synthetic augmentation and cross-domain feature alignment},
+  journal = {Array},
+  volume  = {26},
+  pages   = {100416},
+  year    = {2025},
+  doi     = {10.1016/j.array.2025.100416}
+}
+
+% SOTA "CNN classique" par transfert sur PBC
+@article{asghar2024tenclasses,
+  author  = {Asghar, Rabia and Kumar, Sanjay and Hynds, Paul},
+  title   = {Automatic classification of 10 blood cell subtypes using transfer learning via pre-trained convolutional neural networks},
+  journal = {Informatics in Medicine Unlocked},
+  volume  = {49},
+  pages   = {101542},
+  year    = {2024},
+  doi     = {10.1016/j.imu.2024.101542}
+}
+
+@misc{asghar2023allbloodcell,
+  author        = {Asghar, Rabia and Kumar, Sanjay and Hynds, Paul and Mahfooz, Abeera},
+  title         = {Classification of All Blood Cell Images using {ML} and {DL} Models},
+  year          = {2023},
+  eprint        = {2308.06300},
+  archivePrefix = {arXiv}
+}
+
+@article{abouali2023wbcvit,
+  author  = {Abou Ali, Mohamad and Dornaika, Fadi and Arganda-Carreras, Ignacio},
+  title   = {White Blood Cell Classification: Convolutional Neural Network ({CNN}) and Vision Transformer ({ViT}) under Medical Microscope},
+  journal = {Algorithms},
+  volume  = {16},
+  number  = {11},
+  pages   = {525},
+  year    = {2023},
+  doi     = {10.3390/a16110525}
+}
+
+% Modèle de fondation hématologie
+@inproceedings{koch2024dinobloom,
+  author    = {Koch, Valentin and Wagner, Sophia J. and Kazeminia, Salome and Sancar, Ece and Hehr, Matthias and Schnabel, Julia A. and Peng, Tingying and Marr, Carsten},
+  title     = {{DinoBloom}: A Foundation Model for Generalizable Cell Embeddings in Hematology},
+  booktitle = {Medical Image Computing and Computer Assisted Intervention (MICCAI 2024)},
+  series    = {Lecture Notes in Computer Science},
+  pages     = {520--530},
+  year      = {2024},
+  publisher = {Springer},
+  doi       = {10.1007/978-3-031-72390-2_49}
+}
+
+% Adaptation de domaine adversariale
+@article{ganin2016dann,
+  author  = {Ganin, Yaroslav and Ustinova, Evgeniya and Ajakan, Hana and Germain, Pascal and Larochelle, Hugo and Laviolette, Fran{\c{c}}ois and Marchand, Mario and Lempitsky, Victor},
+  title   = {Domain-Adversarial Training of Neural Networks},
+  journal = {Journal of Machine Learning Research},
+  volume  = {17},
+  number  = {59},
+  pages   = {1--35},
+  year    = {2016}
+}
+
+% Bibliothèque de backbones pré-entraînés
+@misc{wightman2019timm,
+  author       = {Wightman, Ross},
+  title        = {{PyTorch} Image Models ({timm})},
+  year         = {2019},
+  howpublished = {\url{https://github.com/huggingface/pytorch-image-models}},
+  doi          = {10.5281/zenodo.4414861}
+}
+
+% Interprétabilité
+@inproceedings{selvaraju2017gradcam,
+  author    = {Selvaraju, Ramprasaath R. and Cogswell, Michael and Das, Abhishek and Vedantam, Ramakrishna and Parikh, Devi and Batra, Dhruv},
+  title     = {Grad-{CAM}: Visual Explanations from Deep Networks via Gradient-based Localization},
+  booktitle = {IEEE International Conference on Computer Vision (ICCV)},
+  pages     = {618--626},
+  year      = {2017},
+  doi       = {10.1109/ICCV.2017.74}
+}

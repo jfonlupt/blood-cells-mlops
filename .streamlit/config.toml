@@ -1,0 +1,16 @@
+[theme]
+primaryColor = "#E4002B"
+linkColor = "#E4002B"
+
+[theme.light]
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F4F5F8"
+textColor = "#16213E"
+
+[theme.dark]
+backgroundColor = "#0F1626"
+secondaryBackgroundColor = "#182238"
+textColor = "#E7E9F2"
+
+[server]
+runOnSave = true

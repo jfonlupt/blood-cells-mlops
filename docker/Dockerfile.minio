@@ -1,0 +1,11 @@
+FROM datascientest/minio:latest
+
+WORKDIR /data
+
+ADD minio_setup.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+EXPOSE 9000 9001
+
+# Run MinIO server with console access
+ENTRYPOINT [ "/entrypoint.sh" ]

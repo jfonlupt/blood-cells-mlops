@@ -1,0 +1,15 @@
+task: [type]
+
+model.architecture:
+  - {blocks: [{depth: 2, channels: 32, kernel: 3}, {depth: 2, channels: 64, kernel: 3}], classifier: [64]}
+  - {blocks: [{depth: 2, channels: 32, kernel: 3}, {depth: 2, channels: 64, kernel: 3}], classifier: [128, 64]}
+  - {blocks: [{depth: 2, channels: 32, kernel: 3}, {depth: 2, channels: 64, kernel: 3}], classifier: [128]}
+
+  - {blocks: [{depth: 2, channels: 32, kernel: 5}, {depth: 2, channels: 64, kernel: 3}], classifier: [64]}
+  - {blocks: [{depth: 2, channels: 32, kernel: 5}, {depth: 2, channels: 64, kernel: 3}], classifier: [128, 64]}
+  - {blocks: [{depth: 2, channels: 32, kernel: 5}, {depth: 2, channels: 64, kernel: 3}], classifier: [128]}
+
+  - {blocks: [{depth: 2, channels: 32, kernel: 5}, {depth: 2, channels: 64, kernel: 3}, {depth: 2, channels: 128, kernel: 3}], classifier: [128, 64]}
+  - {blocks: [{depth: 2, channels: 32, kernel: 5}, {depth: 2, channels: 64, kernel: 3}, {depth: 2, channels: 128, kernel: 3}], classifier: [256, 128, 64]}
+  - {blocks: [{depth: 2, channels: 32, kernel: 5}, {depth: 2, channels: 64, kernel: 3}, {depth: 2, channels: 128, kernel: 3}], classifier: [256, 128]}
+  - {blocks: [{depth: 2, channels: 32, kernel: 5}, {depth: 2, channels: 64, kernel: 3}, {depth: 2, channels: 128, kernel: 3}], classifier: [256]}

@@ -1,0 +1,44 @@
+# Règles d'alerte de l'API Blood Cells (chargées via rule_files dans prometheus.yml)
+groups:
+  - name: api-blood-cells
+    rules:
+      - alert: APIInjoignable
+        expr: up{job="blood_cells_server"} == 0
+        for: 1m
+        labels:
+          severity: critique
+        annotations:
+          summary: "L'API Blood Cells ne répond plus"
+          description: "Prometheus n'arrive plus à collecter {{ $labels.instance }} depuis plus d'1 minute."
+
+      - alert: TauxErreurs5xxEleve
+        expr: |
+          sum(rate(blood_cells_server_request_total{http_response_code=~"5.."}[5m]))
+            / clamp_min(sum(rate(blood_cells_server_request_total{endpoint!~"/readyz|/livez|/healthz|/metrics"}[5m])), 1e-9)
+            > 0.05
+        for: 5m
+        labels:
+          severity: haute
+        annotations:
+          summary: "Plus de 5 % d'erreurs serveur sur l'API"
+          description: "Taux d'erreurs 5xx : {{ $value | humanizePercentage }} sur les 5 dernières minutes."
+
+      - alert: LatenceAPIElevee
+        expr: |
+          histogram_quantile(0.95,
+            sum by (le) (rate(blood_cells_server_request_duration_seconds_bucket{endpoint="/predict"}[5m]))
+          ) > 2
+        for: 5m
+        labels:
+          severity: moyenne
+        annotations:
+          summary: "/predict est lent (p95 > 2 s)"
+          description: "95 % des prédictions répondent en moins de {{ $value | humanizeDuration }}."
+
+      - alert: RefusAuthentificationNombreux
+        expr: sum(increase(blood_cells_server_request_total{http_response_code="401"}[5m])) > 50
+        labels:
+          severity: moyenne
+        annotations:
+          summary: "Nombreux refus d'authentification"
+          description: "{{ $value | printf \"%.0f\" }} requêtes refusées (401) en 5 minutes : identifiants erronés ou tentative d'intrusion."

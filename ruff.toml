@@ -1,0 +1,54 @@
+line-length = 100
+indent-width = 4
+extend-exclude = ["*.ipynb"]
+# Dérivé de requires-python (3.14) par défaut, mais src/ tourne aussi sous
+# Python 3.13 dans l'image blood_cells_airflow (cf. docker/Dockerfile.airflow) :
+# on épingle ici le plus bas dénominateur commun pour que le formatter ne
+# retire pas des parenthèses qu'exige 3.13 (ex. PEP 758, `except (A, B):`).
+target-version = "py313"
+
+[lint]
+extend-select = [
+    "F",          # Pyflakes
+    "W",          # PyCodeStyle
+    "D",          # Docstrings
+    "I",          # Sort imports
+    "UP",         # upgrade python version
+    "C4",         # Comprehensions
+    "FA",         # __future__ imports
+    "ISC",        # string concat
+    "ICN",        # import convention
+    "RET",        # return practice
+    "SIM",        # simplification
+    "TID",        # import practice
+    "TC",         # import in type check
+    "PTH",        # pathlib
+    "TD",         # TODO comments
+    "NPY",        # numpy
+    "FURB",       # python patterns
+    "S",          # security
+]
+ignore = [
+    "D417", "F401",
+    # Docstrings manquants (le contenu d'un docstring existant reste vérifié) :
+    "D100", "D101", "D102", "D103", "D104", "D105", "D106", "D107",
+]
+
+[lint.per-file-ignores]
+"tests/**" = ["S101", "D", "SLF001", "ICN001"]
+
+[lint.pydocstyle]
+convention = "google"
+
+[format]
+# Like Black, use double quotes for strings.
+quote-style = "double"
+
+# Like Black, indent with spaces, rather than tabs.
+indent-style = "space"
+
+# Like Black, respect magic trailing commas.
+skip-magic-trailing-comma = false
+
+# Like Black, automatically detect the appropriate line ending.
+line-ending = "auto"

@@ -1,0 +1,57 @@
+{
+  "IMG_SIZE": 400,
+  "TARGET_CLASSES": [
+    "Neutrophil (segmented)",
+    "Lymphocyte",
+    "Eosinophil",
+    "Myeloblast",
+    "Monocyte",
+    "Platelet",
+    "Neutrophil (band)",
+    "Erythroblast",
+    "Basophil",
+    "Myelocyte",
+    "Metamyelocyte",
+    "Promyelocyte",
+    "Monoblast",
+    "Granulocytes immatures de PBC"
+  ],
+  "LEVEL1_CLASSES": [
+    "Platelet",
+    "Erythroblast",
+    "Lymphocyte",
+    "Basophil",
+    "Monocyte",
+    "Lignée granulocytaire"
+  ],
+  "LEVEL1_ISOLATED": [
+    "Platelet",
+    "Erythroblast",
+    "Lymphocyte",
+    "Basophil",
+    "Monocyte"
+  ],
+  "GRANULOCYTIC_GROUP_LABEL": "Lignée granulocytaire",
+  "LEVEL3_CLASSES": [
+    "Neutrophil (band)",
+    "Neutrophil (segmented)",
+    "Reste (6 classes)"
+  ],
+  "RESTE_LABEL_L3": "Reste (6 classes)",
+  "IG_LABEL": "Granulocytes immatures de PBC",
+  "LEVEL5_CLASSES": [
+    "Granulocytes immatures de PBC",
+    "Reste"
+  ],
+  "LEVEL4_CLASSES": [
+    "Myeloblast",
+    "Promyelocyte",
+    "Myelocyte",
+    "Metamyelocyte",
+    "Monoblast",
+    "Granulocytes immatures de PBC"
+  ],
+  "REJECT_LABEL": "A confirmer manuellement",
+  "T_ACCEPT_L4": 0.8086066842079163,
+  "T_ACCEPT_L5": 0.6513820886611938
+}

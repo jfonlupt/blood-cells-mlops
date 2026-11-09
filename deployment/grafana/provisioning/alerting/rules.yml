@@ -1,0 +1,331 @@
+# Provisioned Grafana alert rules - do not edit via the UI, edit this file instead.
+apiVersion: 1
+groups:
+- orgId: 1
+  name: Infrastructure
+  folder: Blood Cells Alerts
+  interval: 1m
+  rules:
+  - uid: blood-cells-alert-cpu-high
+    title: High CPU usage (host)
+    condition: C
+    data:
+    - refId: A
+      relativeTimeRange:
+        from: 600
+        to: 0
+      datasourceUid: prometheus
+      model:
+        refId: A
+        expr: 100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
+        instant: true
+    - refId: B
+      relativeTimeRange:
+        from: 600
+        to: 0
+      datasourceUid: __expr__
+      model:
+        refId: B
+        type: reduce
+        expression: A
+        reducer: last
+    - refId: C
+      relativeTimeRange:
+        from: 600
+        to: 0
+      datasourceUid: __expr__
+      model:
+        refId: C
+        type: threshold
+        expression: B
+        conditions:
+        - evaluator:
+            type: gt
+            params:
+            - 85
+    noDataState: NoData
+    execErrState: Error
+    for: 5m
+    annotations:
+      summary: CPU usage has been above 85% for 5 minutes (currently {{ $values.B }}%).
+    labels:
+      severity: warning
+  - uid: blood-cells-alert-mem-high
+    title: High memory usage (host)
+    condition: C
+    data:
+    - refId: A
+      relativeTimeRange:
+        from: 600
+        to: 0
+      datasourceUid: prometheus
+      model:
+        refId: A
+        expr: 100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes))
+        instant: true
+    - refId: B
+      relativeTimeRange:
+        from: 600
+        to: 0
+      datasourceUid: __expr__
+      model:
+        refId: B
+        type: reduce
+        expression: A
+        reducer: last
+    - refId: C
+      relativeTimeRange:
+        from: 600
+        to: 0
+      datasourceUid: __expr__
+      model:
+        refId: C
+        type: threshold
+        expression: B
+        conditions:
+        - evaluator:
+            type: gt
+            params:
+            - 85
+    noDataState: NoData
+    execErrState: Error
+    for: 5m
+    annotations:
+      summary: Memory usage has been above 85% for 5 minutes (currently {{ $values.B }}%).
+    labels:
+      severity: warning
+- orgId: 1
+  name: API
+  folder: Blood Cells Alerts
+  interval: 1m
+  rules:
+  - uid: blood-cells-alert-api-down
+    title: API is down
+    condition: C
+    data:
+    - refId: A
+      relativeTimeRange:
+        from: 600
+        to: 0
+      datasourceUid: prometheus
+      model:
+        refId: A
+        expr: up{job="blood_cells_server"}
+        instant: true
+    - refId: B
+      relativeTimeRange:
+        from: 600
+        to: 0
+      datasourceUid: __expr__
+      model:
+        refId: B
+        type: reduce
+        expression: A
+        reducer: last
+    - refId: C
+      relativeTimeRange:
+        from: 600
+        to: 0
+      datasourceUid: __expr__
+      model:
+        refId: C
+        type: threshold
+        expression: B
+        conditions:
+        - evaluator:
+            type: lt
+            params:
+            - 1
+    noDataState: NoData
+    execErrState: Error
+    for: 1m
+    annotations:
+      summary: The blood_cells_server API has not responded to Prometheus scrapes for 1 minute.
+    labels:
+      severity: critical
+  - uid: blood-cells-alert-error-rate
+    title: High API error rate (2h)
+    condition: C
+    data:
+    - refId: A
+      relativeTimeRange:
+        from: 600
+        to: 0
+      datasourceUid: prometheus
+      model:
+        refId: A
+        expr: sum(rate(api_requests_total{status_code!~"2.."}[2h])) / sum(rate(api_requests_total[2h]))
+        instant: true
+    - refId: B
+      relativeTimeRange:
+        from: 600
+        to: 0
+      datasourceUid: __expr__
+      model:
+        refId: B
+        type: reduce
+        expression: A
+        reducer: last
+    - refId: C
+      relativeTimeRange:
+        from: 600
+        to: 0
+      datasourceUid: __expr__
+      model:
+        refId: C
+        type: threshold
+        expression: B
+        conditions:
+        - evaluator:
+            type: gt
+            params:
+            - 0.5
+    noDataState: NoData
+    execErrState: Error
+    for: 5m
+    annotations:
+      summary: Error rate over the last 2h is above 50% (currently {{ $values.B }}).
+    labels:
+      severity: critical
+- orgId: 1
+  name: Model quality
+  folder: Blood Cells Alerts
+  interval: 1m
+  rules:
+  - uid: blood-cells-alert-f1-low
+    title: Model F1 score too low
+    condition: C
+    data:
+    - refId: A
+      relativeTimeRange:
+        from: 600
+        to: 0
+      datasourceUid: prometheus
+      model:
+        refId: A
+        expr: model_f1_score
+        instant: true
+    - refId: B
+      relativeTimeRange:
+        from: 600
+        to: 0
+      datasourceUid: __expr__
+      model:
+        refId: B
+        type: reduce
+        expression: A
+        reducer: last
+    - refId: C
+      relativeTimeRange:
+        from: 600
+        to: 0
+      datasourceUid: __expr__
+      model:
+        refId: C
+        type: threshold
+        expression: B
+        conditions:
+        - evaluator:
+            type: lt
+            params:
+            - 0.7
+    noDataState: NoData
+    execErrState: Error
+    for: 10m
+    annotations:
+      summary: Model {{ $labels.model }} F1 score is below 0.7 (currently {{ $values.B }}).
+    labels:
+      severity: warning
+- orgId: 1
+  name: Data drift
+  folder: Blood Cells Alerts
+  interval: 1m
+  rules:
+  - uid: blood-cells-alert-descriptor-drift
+    title: Descriptor columns drift share too high
+    condition: C
+    data:
+    - refId: A
+      relativeTimeRange:
+        from: 600
+        to: 0
+      datasourceUid: prometheus
+      model:
+        refId: A
+        expr: model_descriptor_columns_drifted_share
+        instant: true
+    - refId: B
+      relativeTimeRange:
+        from: 600
+        to: 0
+      datasourceUid: __expr__
+      model:
+        refId: B
+        type: reduce
+        expression: A
+        reducer: last
+    - refId: C
+      relativeTimeRange:
+        from: 600
+        to: 0
+      datasourceUid: __expr__
+      model:
+        refId: C
+        type: threshold
+        expression: B
+        conditions:
+        - evaluator:
+            type: gt
+            params:
+            - 0.6
+    noDataState: NoData
+    execErrState: Error
+    for: 10m
+    annotations:
+      summary: 'Model {{ $labels.model }}: share of drifted descriptor columns is above 0.6 (currently {{ $values.B }}).'
+    labels:
+      severity: warning
+  - uid: blood-cells-alert-embeddings-drift
+    title: Embeddings drift too high
+    condition: C
+    data:
+    - refId: A
+      relativeTimeRange:
+        from: 600
+        to: 0
+      datasourceUid: prometheus
+      model:
+        refId: A
+        expr: model_embeddings_drift
+        instant: true
+    - refId: B
+      relativeTimeRange:
+        from: 600
+        to: 0
+      datasourceUid: __expr__
+      model:
+        refId: B
+        type: reduce
+        expression: A
+        reducer: last
+    - refId: C
+      relativeTimeRange:
+        from: 600
+        to: 0
+      datasourceUid: __expr__
+      model:
+        refId: C
+        type: threshold
+        expression: B
+        conditions:
+        - evaluator:
+            type: gt
+            params:
+            - 0.55
+    noDataState: NoData
+    execErrState: Error
+    for: 10m
+    annotations:
+      summary: 'Model {{ $labels.model }}: embeddings drift is above 0.55 (currently {{ $values.B }}).'
+    labels:
+      severity: warning

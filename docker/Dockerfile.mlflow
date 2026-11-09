@@ -1,0 +1,10 @@
+FROM ghcr.io/mlflow/mlflow:latest
+
+WORKDIR /mlflow
+ARG MLFLOW_PORT=5001
+ENV MLFLOW_PORT=${MLFLOW_PORT}
+EXPOSE ${MLFLOW_PORT}
+
+RUN pip install boto3
+
+CMD mlflow server --host 0.0.0.0 --port ${MLFLOW_PORT} --backend-store-uri sqlite:///mlflow.db --default-artifact-root "$MLFLOW_ARTIFACT_URI"

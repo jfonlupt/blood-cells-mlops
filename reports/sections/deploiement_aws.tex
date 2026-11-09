@@ -1,0 +1,230 @@
+% ---------------------------------------------------------------------------
+% Section « Déploiement » (phase 2 MLOps) — incluse depuis reports/report.tex
+% via \include{sections/deploiement_aws}, entre sections/mlops et
+% sections/conclusion.
+% Utilise uniquement des paquets déjà chargés par report.tex :
+% tikz (positioning, arrows.meta), booktabs, tabularx, xcolor (couleurs liora*).
+% ---------------------------------------------------------------------------
+
+\section{Déploiement sur AWS}
+\label{sec:deploiement-aws}
+
+Le service de classification tourne sur une machine virtuelle AWS partagée par
+l'équipe, en région Paris (\texttt{eu-west-3}). Toute la chaîne MLOps y est
+conteneurisée : suivi des expériences et registre de modèles (MLflow), stockage
+des artefacts (MinIO), API de prédiction authentifiée (BentoML), supervision
+(Prometheus, Grafana). Les jeux de données sont versionnés avec DVC dans un bucket
+S3, et le code est contrôlé puis empaqueté par GitHub Actions. La machine n'expose
+aucun port sur Internet : on n'y accède qu'à travers AWS Systems Manager, avec les
+droits IAM de chacun.
+
+\subsection{Architecture}
+
+\begin{figure}[H]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[
+  font=\sffamily\scriptsize,
+  >={Stealth[length=2.2mm]},
+  box/.style={draw=lioraink, rounded corners=2pt, fill=white, align=center,
+              line width=0.6pt, inner sep=3pt},
+  svc/.style={box, minimum width=2.8cm, minimum height=1.5cm, text width=2.6cm},
+  ctr/.style={box, minimum width=4.2cm, minimum height=2.0cm, text width=4.0cm},
+  ext/.style={box, fill=lioraline!45, minimum height=1.3cm},
+  flow/.style={->, draw=lioraink, line width=0.6pt},
+  sec/.style={->, draw=liorared, line width=0.8pt},
+  lbl/.style={font=\sffamily\tiny, text=lioragrey, align=center, fill=white, inner sep=1pt},
+]
+% --- Acteurs externes --------------------------------------------------------
+\node[ext, minimum width=5.9cm, text width=5.7cm] (team) at (3.35,12.65)
+  {\textbf{Postes de l'équipe} (3 membres)\\AWS CLI \texttt{aws login} + MFA,
+   plugin Session Manager};
+\node[ext, minimum width=5.9cm, text width=5.7cm] (gh) at (9.55,12.65)
+  {\textbf{GitHub} \texttt{jul26\_bds\_blood\_cells}\\Actions : CI (ruff, pytest),
+   image de l'API testée puis publiée};
+
+% --- Compte AWS -------------------------------------------------------------
+\draw[lioraink, line width=0.8pt, rounded corners=4pt] (0,0) rectangle (16,11.2);
+\node[anchor=north east, font=\sffamily\small\bfseries, text=lioraink] at (15.85,11.12)
+  {AWS \textperiodcentered{} région eu-west-3 (Paris)};
+
+\node[svc] (iam)   at (1.8,9.6)  {\textbf{IAM}\\groupe \texttt{blood-cells-team}\\garde-fous :\\région, suppression};
+\node[svc] (ssm)   at (4.9,9.6)  {\textbf{Systems Manager}\\Session Manager\\(shell, tunnels)};
+\node[svc] (ecr)   at (8.0,9.6)  {\textbf{ECR}\\registre d'images\\(image de l'API)};
+\node[svc] (s3)    at (11.1,9.6) {\textbf{S3}\\jeux de données\\versionnés (DVC)};
+\node[svc] (sched) at (14.2,9.6) {\textbf{EventBridge Scheduler}\\arrêt de la VM à 22 h};
+
+% --- Machine virtuelle --------------------------------------------------------
+\draw[liorared, line width=0.9pt, rounded corners=4pt] (0.3,0.3) rectangle (15.7,8.0);
+\node[anchor=north west, align=left, text=lioraink] at (0.45,7.95)
+  {\textbf{EC2 \texttt{blood-cells-vm}} \textperiodcentered{} m7i-flex.large (2 vCPU, 8 Go, 80 Go)
+   \textperiodcentered{} Ubuntu 24.04 \textperiodcentered{} \textcolor{liorared}{aucun port entrant}
+   \textperiodcentered{} rôle \texttt{blood-cells-ec2-role}};
+
+\draw[lioragrey, dashed, rounded corners=3pt] (0.6,0.6) rectangle (15.4,7.1);
+\node[anchor=north west, text=lioragrey] at (0.7,7.05) {Docker Compose};
+
+\node[ctr] (api)   at (3.1,5.2)  {\textbf{API BentoML} (8000)\\\texttt{/login} (JWT),
+  \texttt{/predict}, \texttt{/models}, \texttt{/metrics}};
+\node[ctr] (mlf)   at (7.9,5.2)  {\textbf{MLflow} (5001)\\suivi des expériences,\\registre, alias \emph{champion}};
+\node[ctr] (minio) at (12.7,5.2) {\textbf{MinIO} (9000, 9001)\\stockage S3 des artefacts MLflow};
+\node[ctr] (prom)  at (3.1,2.45) {\textbf{Prometheus} (9090)\\collecte des métriques,\\4 règles d'alerte};
+\node[ctr] (train) at (7.9,2.45) {\textbf{Entraînement}\\\texttt{src.experiments.run}\\lit \texttt{data/} (PBC, LMU)};
+\node[ctr] (graf)  at (12.7,2.45) {\textbf{Grafana} (9091)\\tableau de bord de l'API};
+
+% --- Flux -------------------------------------------------------------------
+\draw[sec]  (team.south -| iam)  -- node[lbl, pos=0.45] {authentification} (iam.north);
+\draw[sec]  (team.south -| ssm)  -- node[lbl, pos=0.45] {session chiffrée} (ssm.north);
+\draw[sec]  (gh.south -| ecr)    -- node[lbl, pos=0.45] {OIDC, \texttt{docker push}} (ecr.north);
+
+\draw[sec]  (ssm.south)   -- node[lbl] {shell et\\tunnels de ports} (ssm.south |- 0,8.0);
+\draw[flow] (ecr.south)   -- node[lbl] {\texttt{docker pull}} (ecr.south |- 0,8.0);
+\draw[flow] (s3.south)    -- node[lbl] {\texttt{dvc pull}} (s3.south |- 0,8.0);
+\draw[flow] (sched.south) -- node[lbl] {arrêt} (sched.south |- 0,8.0);
+
+\draw[flow] (api)   -- node[lbl, above=1pt] {charge le\\\emph{champion}} (mlf);
+\draw[flow] (mlf)   -- node[lbl, above=1pt] {artefacts} (minio);
+\draw[flow] (train) -- node[lbl] {runs, modèles} (mlf);
+\draw[flow] (prom)  -- node[lbl] {lit \texttt{/metrics}} (api);
+\draw[flow] (graf.south) -- ++(0,-0.45) -| node[lbl, pos=0.25] {requêtes} (prom.south);
+\end{tikzpicture}}
+\caption{Architecture déployée. En rouge, les accès contrôlés par IAM : personne
+n'ouvre de port réseau, tout passe par AWS Systems Manager ou par la fédération
+OIDC de GitHub. En pointillés, les services de la pile Docker Compose.}
+\label{fig:architecture-aws}
+\end{figure}
+
+\subsection{Services et accès}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}l l X@{}}
+\toprule
+\textbf{Service} & \textbf{Port (VM)} & \textbf{Rôle} \\
+\midrule
+API BentoML & 8000 & prédiction ; \texttt{/login} délivre un jeton JWT valable 1 h, exigé par \texttt{/predict} \\
+MLflow      & 5001 & suivi des entraînements et registre ; l'API sert la version d'alias \emph{champion} \\
+MinIO       & 9000, 9001 & stockage objet des artefacts MLflow (API S3, console) \\
+Prometheus  & 9090 & collecte toutes les 15 s les métriques exposées par l'API \\
+Grafana     & 9091 & tableaux de bord de supervision \\
+\bottomrule
+\end{tabularx}
+\caption{Services de la pile Docker Compose. Les ports ne sont joignables que
+depuis la VM ou par un tunnel Session Manager ouvert depuis le poste d'un membre.}
+\label{tab:services-aws}
+\end{table}
+
+\subsection{Sécurité}
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Identités.} Chaque membre a son utilisateur IAM, membre du groupe
+        \texttt{blood-cells-team}, avec MFA. La CLI se connecte par
+        \texttt{aws login} : aucune clé d'accès permanente n'est stockée sur les postes.
+  \item \textbf{Garde-fous.} Une politique de groupe refuse toute action hors
+        des régions Paris et \texttt{us-east-1} (services globaux), ainsi que la
+        suppression de la VM, de son disque et du bucket (étiquette \texttt{Protected}).
+  \item \textbf{Réseau.} Le groupe de sécurité de la VM n'a aucune règle entrante ;
+        ni SSH ni clé SSH. Shell et tunnels passent par Session Manager.
+  \item \textbf{Secrets.} Mots de passe MinIO et API, clé de signature JWT :
+        générés aléatoirement dans un fichier \texttt{.env} présent uniquement sur
+        la VM (droits 600, ignoré par Git). La VM lit le dépôt avec un jeton
+        GitHub en lecture seule. GitHub Actions publie dans ECR par fédération
+        OIDC : aucun secret AWS n'est stocké dans GitHub, et seule la branche
+        \texttt{main} peut endosser le rôle de publication.
+  \item \textbf{Coût.} La VM est arrêtée automatiquement chaque soir à 22 h, et des
+        alertes de facturation sont actives.
+\end{itemize}
+
+\subsection{Données, intégration continue et supervision}
+
+\paragraph{Données versionnées.} Les deux jeux d'images (PBC et LMU) sont suivis par
+DVC : le dépôt Git ne contient que deux petits fichiers \texttt{.dvc}, qui décrivent
+le contenu exact de chaque dossier, tandis que les images sont stockées dans
+\texttt{s3://blood-cells-123456789012/dvc} (35\,451 objets, 12,0~Go, les fichiers
+identiques n'étant stockés qu'une fois). Chaque commit référence donc la version
+précise des données ; sur la VM, \texttt{dvc pull} les restaure en quelques secondes
+grâce au rôle IAM de l'instance. La mise sous DVC a aussi permis d'écarter un dossier
+parasite \texttt{\_\_MACOSX} (20 faux fichiers \texttt{.jpg}) présent dans l'archive PBC.
+
+\paragraph{Intégration et livraison continues.} Deux workflows GitHub Actions
+accompagnent le dépôt :
+\begin{itemize}[leftmargin=*]
+  \item \texttt{ci.yml}, à chaque pull request : contrôle du style (\texttt{ruff})
+        et tests unitaires (\texttt{pytest}), avec PyTorch en version CPU ;
+  \item \texttt{build-bento.yml}, à chaque fusion dans \texttt{main} : construction
+        de l'image de l'API, test de fumée (démarrage, refus d'un intrus sur
+        \texttt{/login}, refus de \texttt{/predict} sans jeton), puis publication
+        dans Amazon ECR, où seules les trois dernières images sont conservées.
+\end{itemize}
+
+Depuis le 24 octobre, la chaîne publie l'image de l'API à chaque fusion, et la VM la
+récupère directement depuis ECR (\texttt{docker pull}) au lieu de la reconstruire, soit
+environ 15 minutes de construction en moins par mise à jour. La mise au point a corrigé
+deux problèmes : un conflit de version de \texttt{bentoml} entre \texttt{pyproject.toml} et
+\texttt{bentofile.yaml} (la CI installe désormais la version épinglée), et le format d'identité OIDC de l'organisation GitHub, qui inclut des identifiants
+numériques de l'organisation et du dépôt (relevé dans CloudTrail) ; la relation
+d'approbation du rôle accepte désormais exactement cette identité, sur la seule
+branche \texttt{main}.
+
+\paragraph{Supervision.} Prometheus collecte toutes les 15~s les métriques exposées
+par l'API ; un tableau de bord Grafana (débit, latence, taux d'erreur, refus
+d'authentification, prédictions par classe) est versionné dans le dépôt. Quatre
+règles d'alerte sont évaluées en continu :
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}l X l@{}}
+\toprule
+\textbf{Alerte} & \textbf{Condition} & \textbf{Gravité} \\
+\midrule
+\texttt{APIInjoignable} & Prometheus ne peut plus collecter l'API pendant 1~min & critique \\
+\texttt{TauxErreurs5xxEleve} & plus de 5~\% d'erreurs serveur sur 5~min & haute \\
+\texttt{LatenceAPIElevee} & p95 de \texttt{/predict} au-delà de 2~s pendant 5~min & moyenne \\
+\texttt{RefusAuthentificationNombreux} & plus de 50 refus 401 en 5~min & moyenne \\
+\bottomrule
+\end{tabularx}
+\caption{Règles d'alerte Prometheus de l'API (\texttt{deployment/prometheus/rules/api.yml}).}
+\label{tab:alertes-aws}
+\end{table}
+
+\paragraph{Exploitation.} La VM s'arrête automatiquement chaque soir à 22~h
+(EventBridge Scheduler) et la pile redémarre seule au démarrage suivant. Le disque
+a été porté à 80~Go et 4~Go de swap protègent les entraînements d'un manque de
+mémoire. Le contexte de construction des images exclut les données et le cache DVC
+(\texttt{.dockerignore}) : sans cette exclusion, Docker copiait 12~Go d'images dans
+l'image d'entraînement et saturait le disque.
+
+\subsection{Validation de l'API déployée}
+
+Les tests suivants ont été menés sur la VM le 22 octobre 2026, avant le premier
+entraînement, puis le 24 octobre après un entraînement de validation du pipeline
+(modèle \emph{baseline}, 1\,000 images, 5 époques, F1 macro de test 0,44) promu
+\emph{champion} : la chaîne complète, de l'entraînement à la prédiction authentifiée,
+fonctionne.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\linewidth}{@{}X c X@{}}
+\toprule
+\textbf{Requête} & \textbf{Code HTTP} & \textbf{Réponse} \\
+\midrule
+\texttt{GET /healthz} & 200 & service démarré \\
+\texttt{POST /login}, mauvais identifiants & 401 & \texttt{Invalid credentials} \\
+\texttt{POST /login}, bons identifiants & 200 & jeton JWT \\
+\texttt{POST /predict} sans jeton & 401 & \texttt{Missing authentication token} \\
+\texttt{POST /predict}, jeton invalide & 401 & \texttt{Invalid token} \\
+\texttt{POST /predict}, jeton valide & 400 & modèle ou alias \emph{champion} absent (attendu) \\
+\texttt{GET /models} & 200 & liste vide (attendu) \\
+\texttt{GET /metrics} & 200 & compteurs \texttt{blood\_cells\_server\_*} \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{Après promotion d'un modèle \emph{champion} (24 octobre)}} \\
+\texttt{POST /predict}, jeton valide & 200 & classe prédite et probabilités des 10 classes \\
+\texttt{GET /models} & 200 & \texttt{baseline-type} \\
+\bottomrule
+\end{tabularx}
+\caption{Tests de l'API sur la VM : l'authentification protège la prédiction, et un modèle promu \emph{champion} est servi.}
+\label{tab:tests-api-aws}
+\end{table}

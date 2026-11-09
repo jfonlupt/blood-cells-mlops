@@ -1,0 +1,361 @@
+Hiérarchie validée -- 14 classes finales, 6 groupes niveau 1, 3 sorties niveau 3, 6 classes niveau 4, vérification finale Niveau 5 (IG) (PyTorch).
+Total images exploitables : 33577
+target_label
+Basophil                         1272
+Eosinophil                       3445
+Erythroblast                     1451
+Granulocytes immatures de PBC     150
+Lymphocyte                       4846
+Metamyelocyte                    1001
+Monoblast                          21
+Monocyte                         3117
+Myeloblast                       3087
+Myelocyte                        1140
+Neutrophil (band)                1709
+Neutrophil (segmented)           9622
+Platelet                         2069
+Promyelocyte                      647
+Train : 23503 | Val : 5037 | Test : 5037
+Device utilisé : cuda
+
+=== Niveau 1 -- Phase 1 (tête seule, backbone gelé) ===
+Epoch 1/20 -- 189s -- loss: 0.7351 acc: 0.8051 val_loss: 0.5265 val_acc: 0.8878 lr: 1.00e-03
+Epoch 2/20 -- 147s -- loss: 0.6057 acc: 0.8547 val_loss: 0.4743 val_acc: 0.9105 lr: 1.00e-03
+Epoch 3/20 -- 145s -- loss: 0.5717 acc: 0.8692 val_loss: 0.4599 val_acc: 0.9242 lr: 1.00e-03
+Epoch 4/20 -- 144s -- loss: 0.5460 acc: 0.8825 val_loss: 0.4337 val_acc: 0.9349 lr: 1.00e-03
+Epoch 5/20 -- 144s -- loss: 0.5427 acc: 0.8838 val_loss: 0.4432 val_acc: 0.9204 lr: 1.00e-03
+Epoch 6/20 -- 143s -- loss: 0.5276 acc: 0.8888 val_loss: 0.4291 val_acc: 0.9333 lr: 1.00e-03
+Epoch 7/20 -- 144s -- loss: 0.5236 acc: 0.8923 val_loss: 0.4234 val_acc: 0.9335 lr: 1.00e-03
+Epoch 8/20 -- 143s -- loss: 0.5175 acc: 0.8932 val_loss: 0.4176 val_acc: 0.9373 lr: 1.00e-03
+Epoch 9/20 -- 142s -- loss: 0.5076 acc: 0.8973 val_loss: 0.4181 val_acc: 0.9371 lr: 1.00e-03
+Epoch 10/20 -- 143s -- loss: 0.5072 acc: 0.8976 val_loss: 0.4217 val_acc: 0.9343 lr: 1.00e-03
+Epoch 11/20 -- 143s -- loss: 0.5015 acc: 0.9008 val_loss: 0.4110 val_acc: 0.9371 lr: 1.00e-03
+Epoch 12/20 -- 143s -- loss: 0.4989 acc: 0.9028 val_loss: 0.4092 val_acc: 0.9369 lr: 5.00e-04
+Epoch 13/20 -- 143s -- loss: 0.4843 acc: 0.9093 val_loss: 0.4006 val_acc: 0.9394 lr: 5.00e-04
+Epoch 14/20 -- 145s -- loss: 0.4834 acc: 0.9067 val_loss: 0.4041 val_acc: 0.9392 lr: 5.00e-04
+Epoch 15/20 -- 144s -- loss: 0.4833 acc: 0.9075 val_loss: 0.3969 val_acc: 0.9424 lr: 5.00e-04
+Epoch 16/20 -- 143s -- loss: 0.4768 acc: 0.9135 val_loss: 0.3965 val_acc: 0.9422 lr: 5.00e-04
+Epoch 17/20 -- 143s -- loss: 0.4727 acc: 0.9125 val_loss: 0.3987 val_acc: 0.9391 lr: 5.00e-04
+Epoch 18/20 -- 143s -- loss: 0.4758 acc: 0.9117 val_loss: 0.3938 val_acc: 0.9428 lr: 5.00e-04
+Epoch 19/20 -- 146s -- loss: 0.4740 acc: 0.9128 val_loss: 0.4005 val_acc: 0.9428 lr: 5.00e-04
+Epoch 20/20 -- 145s -- loss: 0.4713 acc: 0.9124 val_loss: 0.3932 val_acc: 0.9438 lr: 5.00e-04
+Meilleure val_accuracy Phase 1 (tête seule, backbone gelé) : 0.9438
+
+=== Niveau 1 -- Phase 2 (fine-tuning, 80 dernières couches) ===
+Epoch 1/25 -- 197s -- loss: 0.4406 acc: 0.9297 val_loss: 0.3805 val_acc: 0.9533 lr: 1.00e-05
+Epoch 2/25 -- 197s -- loss: 0.4148 acc: 0.9438 val_loss: 0.3657 val_acc: 0.9619 lr: 1.00e-05
+Epoch 3/25 -- 198s -- loss: 0.4013 acc: 0.9471 val_loss: 0.3629 val_acc: 0.9595 lr: 1.00e-05
+Epoch 4/25 -- 198s -- loss: 0.3907 acc: 0.9535 val_loss: 0.3585 val_acc: 0.9645 lr: 1.00e-05
+Epoch 5/25 -- 196s -- loss: 0.3820 acc: 0.9566 val_loss: 0.3543 val_acc: 0.9657 lr: 1.00e-05
+Epoch 6/25 -- 196s -- loss: 0.3776 acc: 0.9591 val_loss: 0.3490 val_acc: 0.9684 lr: 1.00e-05
+Epoch 7/25 -- 197s -- loss: 0.3687 acc: 0.9617 val_loss: 0.3463 val_acc: 0.9692 lr: 1.00e-05
+Epoch 8/25 -- 197s -- loss: 0.3629 acc: 0.9652 val_loss: 0.3441 val_acc: 0.9692 lr: 1.00e-05
+Epoch 9/25 -- 196s -- loss: 0.3581 acc: 0.9662 val_loss: 0.3424 val_acc: 0.9700 lr: 1.00e-05
+Epoch 10/25 -- 196s -- loss: 0.3536 acc: 0.9677 val_loss: 0.3406 val_acc: 0.9698 lr: 1.00e-05
+Epoch 11/25 -- 197s -- loss: 0.3468 acc: 0.9716 val_loss: 0.3385 val_acc: 0.9710 lr: 1.00e-05
+Epoch 12/25 -- 197s -- loss: 0.3444 acc: 0.9728 val_loss: 0.3374 val_acc: 0.9724 lr: 1.00e-05
+Epoch 13/25 -- 196s -- loss: 0.3399 acc: 0.9733 val_loss: 0.3342 val_acc: 0.9714 lr: 1.00e-05
+Epoch 14/25 -- 196s -- loss: 0.3379 acc: 0.9742 val_loss: 0.3334 val_acc: 0.9738 lr: 1.00e-05
+Epoch 15/25 -- 196s -- loss: 0.3357 acc: 0.9748 val_loss: 0.3347 val_acc: 0.9700 lr: 1.00e-05
+Epoch 16/25 -- 196s -- loss: 0.3288 acc: 0.9792 val_loss: 0.3304 val_acc: 0.9748 lr: 1.00e-05
+Epoch 17/25 -- 197s -- loss: 0.3287 acc: 0.9789 val_loss: 0.3291 val_acc: 0.9742 lr: 1.00e-05
+Epoch 18/25 -- 197s -- loss: 0.3258 acc: 0.9795 val_loss: 0.3296 val_acc: 0.9752 lr: 1.00e-05
+Epoch 19/25 -- 197s -- loss: 0.3226 acc: 0.9800 val_loss: 0.3298 val_acc: 0.9750 lr: 1.00e-05
+Epoch 20/25 -- 197s -- loss: 0.3214 acc: 0.9809 val_loss: 0.3285 val_acc: 0.9754 lr: 1.00e-05
+Epoch 21/25 -- 197s -- loss: 0.3173 acc: 0.9824 val_loss: 0.3254 val_acc: 0.9768 lr: 1.00e-05
+Epoch 22/25 -- 196s -- loss: 0.3151 acc: 0.9832 val_loss: 0.3260 val_acc: 0.9756 lr: 1.00e-05
+Epoch 23/25 -- 196s -- loss: 0.3120 acc: 0.9852 val_loss: 0.3257 val_acc: 0.9758 lr: 1.00e-05
+Epoch 24/25 -- 198s -- loss: 0.3108 acc: 0.9853 val_loss: 0.3264 val_acc: 0.9764 lr: 1.00e-05
+Epoch 25/25 -- 197s -- loss: 0.3100 acc: 0.9847 val_loss: 0.3241 val_acc: 0.9760 lr: 5.00e-06
+Meilleure val_accuracy Phase 2 (fine-tuning, 80 dernières couches) : 0.9768
+Niveau 1 -- Phase 2 validée : 0.9768 >= Phase 1 0.9438
+Modèle Niveau 1 sauvegardé : /kaggle/working/models/level1.pt
+Sous-ensemble granulocytaire -- train: 14575, val: 3124
+  dont Eosinophil (train) : 2411 / 14575
+Poids de classe (plafonnés) : Autre=0.60, Eosinophil=3.02
+
+=== Niveau 2 (Eosinophil vs reste) -- Phase 1 (tête seule, backbone gelé) ===
+Epoch 1/20 -- 90s -- loss: 0.0195 acc: 0.9518 val_loss: 0.0064 val_acc: 0.9837 lr: 1.00e-03
+Epoch 2/20 -- 89s -- loss: 0.0125 acc: 0.9714 val_loss: 0.0062 val_acc: 0.9850 lr: 1.00e-03
+Epoch 3/20 -- 89s -- loss: 0.0106 acc: 0.9751 val_loss: 0.0054 val_acc: 0.9891 lr: 1.00e-03
+Epoch 4/20 -- 91s -- loss: 0.0093 acc: 0.9772 val_loss: 0.0048 val_acc: 0.9907 lr: 1.00e-03
+Epoch 5/20 -- 90s -- loss: 0.0090 acc: 0.9799 val_loss: 0.0046 val_acc: 0.9898 lr: 1.00e-03
+Epoch 6/20 -- 89s -- loss: 0.0077 acc: 0.9821 val_loss: 0.0047 val_acc: 0.9898 lr: 1.00e-03
+Epoch 7/20 -- 90s -- loss: 0.0072 acc: 0.9828 val_loss: 0.0039 val_acc: 0.9923 lr: 1.00e-03
+Epoch 8/20 -- 89s -- loss: 0.0076 acc: 0.9820 val_loss: 0.0041 val_acc: 0.9907 lr: 1.00e-03
+Epoch 9/20 -- 89s -- loss: 0.0061 acc: 0.9859 val_loss: 0.0038 val_acc: 0.9910 lr: 1.00e-03
+Epoch 10/20 -- 89s -- loss: 0.0071 acc: 0.9833 val_loss: 0.0040 val_acc: 0.9907 lr: 1.00e-03
+Epoch 11/20 -- 89s -- loss: 0.0060 acc: 0.9850 val_loss: 0.0038 val_acc: 0.9920 lr: 5.00e-04
+Epoch 12/20 -- 89s -- loss: 0.0063 acc: 0.9854 val_loss: 0.0035 val_acc: 0.9936 lr: 5.00e-04
+Epoch 13/20 -- 90s -- loss: 0.0055 acc: 0.9868 val_loss: 0.0036 val_acc: 0.9936 lr: 5.00e-04
+Epoch 14/20 -- 90s -- loss: 0.0057 acc: 0.9877 val_loss: 0.0035 val_acc: 0.9942 lr: 5.00e-04
+Epoch 15/20 -- 89s -- loss: 0.0056 acc: 0.9864 val_loss: 0.0038 val_acc: 0.9923 lr: 5.00e-04
+Epoch 16/20 -- 89s -- loss: 0.0056 acc: 0.9877 val_loss: 0.0032 val_acc: 0.9930 lr: 5.00e-04
+Epoch 17/20 -- 89s -- loss: 0.0051 acc: 0.9877 val_loss: 0.0032 val_acc: 0.9952 lr: 5.00e-04
+Epoch 18/20 -- 90s -- loss: 0.0052 acc: 0.9862 val_loss: 0.0034 val_acc: 0.9933 lr: 5.00e-04
+Epoch 19/20 -- 90s -- loss: 0.0048 acc: 0.9872 val_loss: 0.0034 val_acc: 0.9933 lr: 5.00e-04
+Epoch 20/20 -- 90s -- loss: 0.0053 acc: 0.9872 val_loss: 0.0036 val_acc: 0.9920 lr: 5.00e-04
+Meilleure val_accuracy Phase 1 (tête seule, backbone gelé) : 0.9952
+
+=== Niveau 2 (Eosinophil vs reste) -- Phase 2 (fine-tuning, 30 dernières couches) ===
+Epoch 1/25 -- 100s -- loss: 0.0047 acc: 0.9894 val_loss: 0.0027 val_acc: 0.9952 lr: 1.00e-05
+Epoch 2/25 -- 101s -- loss: 0.0036 acc: 0.9915 val_loss: 0.0027 val_acc: 0.9946 lr: 1.00e-05
+Epoch 3/25 -- 101s -- loss: 0.0031 acc: 0.9931 val_loss: 0.0026 val_acc: 0.9958 lr: 1.00e-05
+Epoch 4/25 -- 101s -- loss: 0.0026 acc: 0.9935 val_loss: 0.0022 val_acc: 0.9965 lr: 1.00e-05
+Epoch 5/25 -- 101s -- loss: 0.0026 acc: 0.9941 val_loss: 0.0022 val_acc: 0.9965 lr: 1.00e-05
+Epoch 6/25 -- 100s -- loss: 0.0023 acc: 0.9945 val_loss: 0.0022 val_acc: 0.9962 lr: 1.00e-05
+Epoch 7/25 -- 100s -- loss: 0.0023 acc: 0.9951 val_loss: 0.0020 val_acc: 0.9965 lr: 1.00e-05
+Epoch 8/25 -- 100s -- loss: 0.0022 acc: 0.9955 val_loss: 0.0021 val_acc: 0.9958 lr: 5.00e-06
+Epoch 9/25 -- 101s -- loss: 0.0016 acc: 0.9963 val_loss: 0.0020 val_acc: 0.9962 lr: 5.00e-06
+Epoch 10/25 -- 101s -- loss: 0.0019 acc: 0.9957 val_loss: 0.0019 val_acc: 0.9968 lr: 5.00e-06
+Epoch 11/25 -- 101s -- loss: 0.0022 acc: 0.9959 val_loss: 0.0018 val_acc: 0.9968 lr: 5.00e-06
+Epoch 12/25 -- 100s -- loss: 0.0016 acc: 0.9962 val_loss: 0.0018 val_acc: 0.9962 lr: 5.00e-06
+Epoch 13/25 -- 101s -- loss: 0.0016 acc: 0.9960 val_loss: 0.0018 val_acc: 0.9968 lr: 5.00e-06
+Epoch 14/25 -- 101s -- loss: 0.0016 acc: 0.9963 val_loss: 0.0018 val_acc: 0.9965 lr: 2.50e-06
+Epoch 15/25 -- 101s -- loss: 0.0017 acc: 0.9962 val_loss: 0.0016 val_acc: 0.9968 lr: 2.50e-06
+Epoch 16/25 -- 100s -- loss: 0.0016 acc: 0.9966 val_loss: 0.0017 val_acc: 0.9968 lr: 2.50e-06
+Epoch 17/25 -- 101s -- loss: 0.0013 acc: 0.9970 val_loss: 0.0017 val_acc: 0.9965 lr: 2.50e-06
+Epoch 18/25 -- 100s -- loss: 0.0015 acc: 0.9972 val_loss: 0.0018 val_acc: 0.9968 lr: 1.25e-06
+Early stopping (patience=8 atteinte)
+Meilleure val_accuracy Phase 2 (fine-tuning, 30 dernières couches) : 0.9968
+Niveau 2 (Eosinophil vs reste) -- Phase 2 validée : 0.9968 >= Phase 1 0.9952
+Modèle Niveau 2 sauvegardé : /kaggle/working/models/level2.pt
+Sous-ensemble (groupe fin, sans Eosinophil) -- train: 12164, val: 2607
+target_label
+Neutrophil (segmented)    6735
+Reste (6 classes)         4233
+Neutrophil (band)         1196
+Poids de classe (plafonnés) : {'Neutrophil (band)': 3.39, 'Neutrophil (segmented)': 0.6, 'Reste (6 classes)': 0.96}
+
+=== Niveau 3 (Neutrophil band / segmented / reste) -- Phase 1 (tête seule, backbone gelé) ===
+Epoch 1/20 -- 75s -- loss: 0.6191 acc: 0.8230 val_loss: 0.4991 val_acc: 0.8773 lr: 1.00e-03
+Epoch 2/20 -- 76s -- loss: 0.5588 acc: 0.8541 val_loss: 0.4894 val_acc: 0.8750 lr: 1.00e-03
+Epoch 3/20 -- 76s -- loss: 0.5316 acc: 0.8681 val_loss: 0.4796 val_acc: 0.8865 lr: 1.00e-03
+Epoch 4/20 -- 76s -- loss: 0.5211 acc: 0.8753 val_loss: 0.4764 val_acc: 0.8888 lr: 1.00e-03
+Epoch 5/20 -- 75s -- loss: 0.5164 acc: 0.8788 val_loss: 0.4786 val_acc: 0.8849 lr: 1.00e-03
+Epoch 6/20 -- 75s -- loss: 0.5114 acc: 0.8825 val_loss: 0.4728 val_acc: 0.8868 lr: 1.00e-03
+Epoch 7/20 -- 75s -- loss: 0.5086 acc: 0.8834 val_loss: 0.4791 val_acc: 0.8750 lr: 1.00e-03
+Epoch 8/20 -- 75s -- loss: 0.5051 acc: 0.8839 val_loss: 0.4609 val_acc: 0.8984 lr: 1.00e-03
+Epoch 9/20 -- 76s -- loss: 0.5065 acc: 0.8824 val_loss: 0.4706 val_acc: 0.9003 lr: 1.00e-03
+Epoch 10/20 -- 75s -- loss: 0.4995 acc: 0.8871 val_loss: 0.4623 val_acc: 0.8949 lr: 1.00e-03
+Epoch 11/20 -- 75s -- loss: 0.4935 acc: 0.8907 val_loss: 0.4600 val_acc: 0.9049 lr: 1.00e-03
+Epoch 12/20 -- 76s -- loss: 0.4924 acc: 0.8931 val_loss: 0.4585 val_acc: 0.8949 lr: 1.00e-03
+Epoch 13/20 -- 76s -- loss: 0.4943 acc: 0.8899 val_loss: 0.4733 val_acc: 0.9076 lr: 1.00e-03
+Epoch 14/20 -- 75s -- loss: 0.4892 acc: 0.8947 val_loss: 0.4568 val_acc: 0.9129 lr: 1.00e-03
+Epoch 15/20 -- 76s -- loss: 0.4865 acc: 0.8940 val_loss: 0.4620 val_acc: 0.9083 lr: 1.00e-03
+Epoch 16/20 -- 76s -- loss: 0.4843 acc: 0.8972 val_loss: 0.4619 val_acc: 0.9018 lr: 1.00e-03
+Epoch 17/20 -- 75s -- loss: 0.4921 acc: 0.8926 val_loss: 0.4644 val_acc: 0.8899 lr: 1.00e-03
+Epoch 18/20 -- 76s -- loss: 0.4853 acc: 0.8919 val_loss: 0.4734 val_acc: 0.9313 lr: 1.00e-03
+Epoch 19/20 -- 76s -- loss: 0.4807 acc: 0.8976 val_loss: 0.4566 val_acc: 0.9076 lr: 1.00e-03
+Epoch 20/20 -- 76s -- loss: 0.4799 acc: 0.8991 val_loss: 0.4657 val_acc: 0.9099 lr: 1.00e-03
+Meilleure val_accuracy Phase 1 (tête seule, backbone gelé) : 0.9313
+
+=== Niveau 3 (Neutrophil band / segmented / reste) -- Phase 2 (fine-tuning, 80 dernières couches) ===
+Epoch 1/25 -- 103s -- loss: 0.4702 acc: 0.9086 val_loss: 0.4445 val_acc: 0.9114 lr: 1.00e-05
+Epoch 2/25 -- 103s -- loss: 0.4466 acc: 0.9157 val_loss: 0.4390 val_acc: 0.9225 lr: 1.00e-05
+Epoch 3/25 -- 102s -- loss: 0.4387 acc: 0.9228 val_loss: 0.4366 val_acc: 0.9221 lr: 1.00e-05
+Epoch 4/25 -- 102s -- loss: 0.4394 acc: 0.9204 val_loss: 0.4334 val_acc: 0.9298 lr: 1.00e-05
+Epoch 5/25 -- 103s -- loss: 0.4264 acc: 0.9273 val_loss: 0.4303 val_acc: 0.9256 lr: 1.00e-05
+Epoch 6/25 -- 102s -- loss: 0.4211 acc: 0.9313 val_loss: 0.4356 val_acc: 0.9310 lr: 1.00e-05
+Epoch 7/25 -- 103s -- loss: 0.4083 acc: 0.9375 val_loss: 0.4274 val_acc: 0.9340 lr: 1.00e-05
+Epoch 8/25 -- 103s -- loss: 0.4056 acc: 0.9402 val_loss: 0.4256 val_acc: 0.9321 lr: 1.00e-05
+Epoch 9/25 -- 102s -- loss: 0.4006 acc: 0.9430 val_loss: 0.4221 val_acc: 0.9363 lr: 1.00e-05
+Epoch 10/25 -- 103s -- loss: 0.3938 acc: 0.9452 val_loss: 0.4238 val_acc: 0.9336 lr: 1.00e-05
+Epoch 11/25 -- 102s -- loss: 0.3902 acc: 0.9446 val_loss: 0.4201 val_acc: 0.9336 lr: 1.00e-05
+Epoch 12/25 -- 103s -- loss: 0.3911 acc: 0.9473 val_loss: 0.4231 val_acc: 0.9367 lr: 1.00e-05
+Epoch 13/25 -- 102s -- loss: 0.3847 acc: 0.9512 val_loss: 0.4225 val_acc: 0.9359 lr: 1.00e-05
+Epoch 14/25 -- 102s -- loss: 0.3792 acc: 0.9540 val_loss: 0.4210 val_acc: 0.9367 lr: 1.00e-05
+Epoch 15/25 -- 102s -- loss: 0.3752 acc: 0.9543 val_loss: 0.4245 val_acc: 0.9398 lr: 1.00e-05
+Epoch 16/25 -- 102s -- loss: 0.3738 acc: 0.9573 val_loss: 0.4240 val_acc: 0.9444 lr: 1.00e-05
+Epoch 17/25 -- 102s -- loss: 0.3667 acc: 0.9610 val_loss: 0.4307 val_acc: 0.9444 lr: 1.00e-05
+Epoch 18/25 -- 102s -- loss: 0.3602 acc: 0.9608 val_loss: 0.4202 val_acc: 0.9436 lr: 1.00e-05
+Epoch 19/25 -- 103s -- loss: 0.3636 acc: 0.9614 val_loss: 0.4250 val_acc: 0.9444 lr: 1.00e-05
+Epoch 20/25 -- 102s -- loss: 0.3561 acc: 0.9645 val_loss: 0.4248 val_acc: 0.9417 lr: 5.00e-06
+Epoch 21/25 -- 103s -- loss: 0.3521 acc: 0.9656 val_loss: 0.4237 val_acc: 0.9451 lr: 5.00e-06
+Epoch 22/25 -- 103s -- loss: 0.3521 acc: 0.9660 val_loss: 0.4253 val_acc: 0.9382 lr: 5.00e-06
+Epoch 23/25 -- 102s -- loss: 0.3543 acc: 0.9647 val_loss: 0.4231 val_acc: 0.9413 lr: 5.00e-06
+Epoch 24/25 -- 102s -- loss: 0.3494 acc: 0.9688 val_loss: 0.4307 val_acc: 0.9478 lr: 5.00e-06
+Epoch 25/25 -- 102s -- loss: 0.3480 acc: 0.9674 val_loss: 0.4253 val_acc: 0.9478 lr: 5.00e-06
+Meilleure val_accuracy Phase 2 (fine-tuning, 80 dernières couches) : 0.9478
+Niveau 3 (Neutrophil band / segmented / reste) -- Phase 2 validée : 0.9478 >= Phase 1 0.9313
+Modèle Niveau 3 sauvegardé : /kaggle/working/models/level3.pt
+Sous-ensemble Niveau 5 (groupe fin, sans Eosinophil/band/segmented) -- train: 4233, val: 907
+  dont Granulocytes immatures de PBC (train) : 105 / 4233
+Sous-ensemble niveau 4 -- train: 4233, val: 907
+target_label
+Myeloblast                       2161
+Myelocyte                         798
+Metamyelocyte                     701
+Promyelocyte                      453
+Granulocytes immatures de PBC     105
+Monoblast                          15
+Poids de classe (plafonnés) : {'Myeloblast': 0.33, 'Promyelocyte': 1.56, 'Myelocyte': 0.88, 'Metamyelocyte': 1.01, 'Monoblast': 20.0, 'Granulocytes immatures de PBC': 6.72}
+
+=== Niveau 4 -- Phase 1 (tête seule, backbone gelé) ===
+Epoch 1/20 -- 26s -- loss: 0.9679 acc: 0.6922 val_loss: 0.7253 val_acc: 0.7861 lr: 1.00e-03
+Epoch 2/20 -- 26s -- loss: 0.6963 acc: 0.7501 val_loss: 0.6749 val_acc: 0.7828 lr: 1.00e-03
+Epoch 3/20 -- 27s -- loss: 0.6056 acc: 0.7909 val_loss: 0.6119 val_acc: 0.7938 lr: 1.00e-03
+Epoch 4/20 -- 27s -- loss: 0.5832 acc: 0.7905 val_loss: 0.6141 val_acc: 0.7872 lr: 1.00e-03
+Epoch 5/20 -- 27s -- loss: 0.5559 acc: 0.7942 val_loss: 0.5888 val_acc: 0.7894 lr: 1.00e-03
+Epoch 6/20 -- 27s -- loss: 0.5279 acc: 0.8103 val_loss: 0.5843 val_acc: 0.7872 lr: 1.00e-03
+Epoch 7/20 -- 27s -- loss: 0.5272 acc: 0.8079 val_loss: 0.5968 val_acc: 0.8115 lr: 1.00e-03
+Epoch 8/20 -- 27s -- loss: 0.5195 acc: 0.8110 val_loss: 0.5803 val_acc: 0.8071 lr: 1.00e-03
+Epoch 9/20 -- 26s -- loss: 0.5112 acc: 0.8122 val_loss: 0.5380 val_acc: 0.8203 lr: 1.00e-03
+Epoch 10/20 -- 27s -- loss: 0.4901 acc: 0.8190 val_loss: 0.5505 val_acc: 0.8390 lr: 1.00e-03
+Epoch 11/20 -- 27s -- loss: 0.4933 acc: 0.8065 val_loss: 0.5539 val_acc: 0.8313 lr: 1.00e-03
+Epoch 12/20 -- 26s -- loss: 0.4649 acc: 0.8228 val_loss: 0.5910 val_acc: 0.8236 lr: 1.00e-03
+Epoch 13/20 -- 26s -- loss: 0.4872 acc: 0.8190 val_loss: 0.5567 val_acc: 0.8203 lr: 1.00e-03
+Epoch 14/20 -- 26s -- loss: 0.4438 acc: 0.8330 val_loss: 0.5945 val_acc: 0.8258 lr: 5.00e-04
+Epoch 15/20 -- 27s -- loss: 0.4558 acc: 0.8264 val_loss: 0.5571 val_acc: 0.8379 lr: 5.00e-04
+Epoch 16/20 -- 26s -- loss: 0.4219 acc: 0.8464 val_loss: 0.5504 val_acc: 0.8192 lr: 5.00e-04
+Early stopping (patience=6 atteinte)
+Meilleure val_accuracy Phase 1 (tête seule, backbone gelé) : 0.8390
+
+=== Niveau 4 -- Phase 2 (fine-tuning, 30 dernières couches) ===
+Epoch 1/25 -- 30s -- loss: 0.4583 acc: 0.8323 val_loss: 0.5493 val_acc: 0.8324 lr: 1.00e-05
+Epoch 2/25 -- 30s -- loss: 0.4500 acc: 0.8323 val_loss: 0.5482 val_acc: 0.8335 lr: 1.00e-05
+Epoch 3/25 -- 30s -- loss: 0.4527 acc: 0.8398 val_loss: 0.5427 val_acc: 0.8357 lr: 1.00e-05
+Epoch 4/25 -- 30s -- loss: 0.4395 acc: 0.8396 val_loss: 0.5330 val_acc: 0.8280 lr: 1.00e-05
+Epoch 5/25 -- 30s -- loss: 0.4289 acc: 0.8469 val_loss: 0.5304 val_acc: 0.8456 lr: 1.00e-05
+Epoch 6/25 -- 30s -- loss: 0.4089 acc: 0.8422 val_loss: 0.5256 val_acc: 0.8390 lr: 1.00e-05
+Epoch 7/25 -- 30s -- loss: 0.4259 acc: 0.8455 val_loss: 0.5202 val_acc: 0.8324 lr: 1.00e-05
+Epoch 8/25 -- 30s -- loss: 0.4019 acc: 0.8542 val_loss: 0.5367 val_acc: 0.8390 lr: 1.00e-05
+Epoch 9/25 -- 30s -- loss: 0.3900 acc: 0.8571 val_loss: 0.5234 val_acc: 0.8456 lr: 5.00e-06
+Epoch 10/25 -- 30s -- loss: 0.4023 acc: 0.8564 val_loss: 0.5066 val_acc: 0.8445 lr: 5.00e-06
+Epoch 11/25 -- 30s -- loss: 0.3819 acc: 0.8533 val_loss: 0.5519 val_acc: 0.8379 lr: 5.00e-06
+Epoch 12/25 -- 30s -- loss: 0.3840 acc: 0.8604 val_loss: 0.5257 val_acc: 0.8490 lr: 5.00e-06
+Epoch 13/25 -- 30s -- loss: 0.3808 acc: 0.8649 val_loss: 0.5391 val_acc: 0.8467 lr: 5.00e-06
+Epoch 14/25 -- 30s -- loss: 0.3773 acc: 0.8639 val_loss: 0.5059 val_acc: 0.8523 lr: 5.00e-06
+Epoch 15/25 -- 30s -- loss: 0.3782 acc: 0.8665 val_loss: 0.5085 val_acc: 0.8490 lr: 5.00e-06
+Epoch 16/25 -- 30s -- loss: 0.3757 acc: 0.8651 val_loss: 0.5246 val_acc: 0.8401 lr: 5.00e-06
+Epoch 17/25 -- 30s -- loss: 0.4037 acc: 0.8611 val_loss: 0.5011 val_acc: 0.8456 lr: 5.00e-06
+Epoch 18/25 -- 30s -- loss: 0.3753 acc: 0.8682 val_loss: 0.5322 val_acc: 0.8423 lr: 2.50e-06
+Epoch 19/25 -- 30s -- loss: 0.3715 acc: 0.8637 val_loss: 0.5164 val_acc: 0.8490 lr: 2.50e-06
+Epoch 20/25 -- 30s -- loss: 0.3679 acc: 0.8677 val_loss: 0.5124 val_acc: 0.8501 lr: 2.50e-06
+Epoch 21/25 -- 30s -- loss: 0.3703 acc: 0.8677 val_loss: 0.5086 val_acc: 0.8501 lr: 2.50e-06
+Epoch 22/25 -- 30s -- loss: 0.3750 acc: 0.8679 val_loss: 0.5259 val_acc: 0.8467 lr: 1.25e-06
+Early stopping (patience=8 atteinte)
+Meilleure val_accuracy Phase 2 (fine-tuning, 30 dernières couches) : 0.8523
+Niveau 4 -- Phase 2 validée : 0.8523 >= Phase 1 0.8390
+Modèle Niveau 4 sauvegardé : /kaggle/working/models/level4.pt
+   Précision visée   Seuil calibré   Couverture (val)
+            99.9%          0.9979              13.5%
+            99.0%          0.9798              38.1%
+            97.0%          0.9148              53.9%
+            95.0%          0.8086              65.5%
+            90.0%          0.6160              85.3%
+Seuil retenu (TARGET_PRECISION_LEVEL4=0.95) : 0.8086
+Artefacts (seuils + classes) sauvegardés : /kaggle/working/models/artifacts.json
+Historique d'entraînement sauvegardé : /kaggle/working/logs/training_history.json
+Log texte complet disponible : /kaggle/working/logs/training_log.txt
+Poids de classe (plafonnés) : Autre=0.51, Granulocytes immatures de PBC=20.00
+
+=== Niveau 5 (Granulocytes immatures de PBC, vérification finale) -- Phase 1 (tête seule, backbone gelé) ===
+Epoch 1/20 -- 26s -- loss: 0.0062 acc: 0.9844 val_loss: 0.0007 val_acc: 1.0000 lr: 1.00e-03
+Epoch 2/20 -- 27s -- loss: 0.0008 acc: 0.9993 val_loss: 0.0002 val_acc: 1.0000 lr: 1.00e-03
+Epoch 3/20 -- 26s -- loss: 0.0005 acc: 0.9988 val_loss: 0.0001 val_acc: 1.0000 lr: 1.00e-03
+Epoch 4/20 -- 26s -- loss: 0.0005 acc: 0.9993 val_loss: 0.0001 val_acc: 1.0000 lr: 1.00e-03
+Epoch 5/20 -- 26s -- loss: 0.0002 acc: 1.0000 val_loss: 0.0001 val_acc: 1.0000 lr: 5.00e-04
+Epoch 6/20 -- 26s -- loss: 0.0002 acc: 0.9998 val_loss: 0.0001 val_acc: 1.0000 lr: 5.00e-04
+Epoch 7/20 -- 26s -- loss: 0.0002 acc: 1.0000 val_loss: 0.0001 val_acc: 1.0000 lr: 5.00e-04
+Early stopping (patience=6 atteinte)
+Meilleure val_accuracy Phase 1 (tête seule, backbone gelé) : 1.0000
+
+=== Niveau 5 (Granulocytes immatures de PBC, vérification finale) -- Phase 2 (fine-tuning, 30 dernières couches) ===
+Epoch 1/25 -- 30s -- loss: 0.0010 acc: 0.9991 val_loss: 0.0004 val_acc: 1.0000 lr: 1.00e-05
+Epoch 2/25 -- 30s -- loss: 0.0007 acc: 0.9995 val_loss: 0.0003 val_acc: 1.0000 lr: 1.00e-05
+Epoch 3/25 -- 30s -- loss: 0.0005 acc: 0.9998 val_loss: 0.0003 val_acc: 1.0000 lr: 1.00e-05
+Epoch 4/25 -- 30s -- loss: 0.0005 acc: 0.9995 val_loss: 0.0002 val_acc: 1.0000 lr: 1.00e-05
+Epoch 5/25 -- 30s -- loss: 0.0004 acc: 1.0000 val_loss: 0.0002 val_acc: 1.0000 lr: 5.00e-06
+Epoch 6/25 -- 30s -- loss: 0.0004 acc: 1.0000 val_loss: 0.0002 val_acc: 1.0000 lr: 5.00e-06
+Epoch 7/25 -- 30s -- loss: 0.0003 acc: 0.9998 val_loss: 0.0002 val_acc: 1.0000 lr: 5.00e-06
+Epoch 8/25 -- 30s -- loss: 0.0004 acc: 0.9995 val_loss: 0.0001 val_acc: 1.0000 lr: 5.00e-06
+Epoch 9/25 -- 30s -- loss: 0.0003 acc: 1.0000 val_loss: 0.0001 val_acc: 1.0000 lr: 2.50e-06
+Early stopping (patience=8 atteinte)
+Meilleure val_accuracy Phase 2 (fine-tuning, 30 dernières couches) : 1.0000
+Niveau 5 (Granulocytes immatures de PBC, vérification finale) -- Phase 2 validée : 1.0000 >= Phase 1 1.0000
+Modèle Niveau 5 sauvegardé : /kaggle/working/models/level5.pt
+   Précision visée   Seuil calibré   Couverture (val)
+            99.9%          0.6514             100.0%
+            99.0%          0.6514             100.0%
+            97.0%          0.6514             100.0%
+            95.0%          0.6514             100.0%
+            90.0%          0.6514             100.0%
+Seuil retenu (TARGET_PRECISION_LEVEL5=0.97) : 0.6514
+Artefacts mis à jour (Niveau 5 ajouté) : /kaggle/working/models/artifacts.json
+Sur le test complet (5037 images, 14 classes) :
+  Décisions fermes      : 4715 (93.6%) -- accuracy 94.19%
+  Revue manuelle requise : 322 (6.4%)
+Accuracy globale (comptant les rejets comme des erreurs) : 88.17%
+36 images trouvées pour la catégorie 'erreurs' (sur 418 images du trio dur au total)
+285 images trouvées pour la catégorie 'rejets' (sur 418 images du trio dur au total)
+Taxonomie des collègues chargée -- 10 classes finales, 2 critique(s), 2 intermédiaire(s), 6 normale(s).
+Correspondance 14 -> 10 classes validée.
+  Neutrophil (segmented)              -> Neutrophil
+  Lymphocyte                          -> Lymphocyte
+  Eosinophil                          -> Eosinophil
+  Myeloblast                          -> Blast
+  Monocyte                            -> Monocyte
+  Platelet                            -> Platelet
+  Neutrophil (band)                   -> Neutrophil
+  Erythroblast                        -> Erythroblast
+  Basophil                            -> Basophil
+  Myelocyte                           -> IG
+  Metamyelocyte                       -> IG
+  Promyelocyte                        -> Promyelocyte
+  Monoblast                           -> Blast
+  Granulocytes immatures de PBC       -> IG
+Comparaison sur 4715/5037 images (93.6% -- le reste a été mis en revue manuelle, exclu de cette comparaison faute d'équivalent chez les collègues).
+f1_macro : 0.9440
+mcc      : 0.9590
+
+Rappel par classe critique (seuil d'éligibilité MIN_CRITICAL_RECALL=0.95) :
+  Blast           : 0.9463 -- SOUS LE SEUIL
+  Promyelocyte    : 0.9423 -- SOUS LE SEUIL
+
+Détection binaire normal / anormal :
+  abnormal_f1        : 0.9458
+  abnormal_precision : 0.9452
+  abnormal_recall    : 0.9463
+
+Erreurs cliniquement dangereuses (anormal prédit comme normal) :
+  Blast -> Lymphocyte : 7
+  Blast -> Monocyte : 17
+  Promyelocyte -> Lymphocyte : 1
+  Promyelocyte -> Monocyte : 1
+  IG -> Neutrophil : 6
+  IG -> Monocyte : 5
+  Erythroblast -> Lymphocyte : 7
+
+Décomposition de 'IG' (fusion de ['Myelocyte', 'Metamyelocyte', 'Granulocytes immatures de PBC']) :
+  Myelocyte                        (n=  42) : IG=24(57%), Promyelocyte=12(29%), Monocyte=4(10%), Neutrophil=2(5%)
+  Metamyelocyte                    (n=  39) : IG=34(87%), Neutrophil=4(10%), Monocyte=1(3%)
+  Granulocytes immatures de PBC    (n=  22) : IG=22(100%)
+
+Décomposition de 'Blast' (fusion de ['Myeloblast', 'Monoblast']) :
+  Myeloblast                       (n= 445) : Blast=422(95%), Monocyte=16(4%), Lymphocyte=7(2%)
+  Monoblast                        (n=   2) : Blast=1(50%), Monocyte=1(50%)
+
+Décomposition de 'Neutrophil' (fusion de ['Neutrophil (segmented)', 'Neutrophil (band)']) :
+  Neutrophil (segmented)           (n=1440) : Neutrophil=1431(99%), Monocyte=5(0%), Eosinophil=2(0%), Basophil=1(0%), Lymphocyte=1(0%)
+  Neutrophil (band)                (n= 254) : Neutrophil=247(97%), IG=5(2%), Eosinophil=1(0%), Monocyte=1(0%)
+Somme des probabilités par image (doit être ~1.0) : min=1.0000, max=1.0000
+Vecteur de probabilités (10 classes) construit pour les 5037 images du test (contrairement aux sections C3-C6, PAS restreint aux décisions fermes -- une probabilité existe pour chaque image, y compris celles que la cascade aurait rejetées).
+top3_acc : 0.9931
+top3_f1  : 0.9907
+
+Métriques par classe (10 classes, toutes images du test) :
+              recall  precision  fbeta2   auprc  top3_recall
+Basophil      0.9424     0.9836  0.9504  0.9859       0.9738
+Blast         0.9335     0.8951  0.9255  0.9616       0.9936
+Eosinophil    0.9807     0.9902  0.9826  0.9956       0.9961
+Erythroblast  0.9679     1.0000  0.9741  0.9971       1.0000
+IG            0.8455     0.9206  0.8595  0.9437       0.9854
+Lymphocyte    0.9615     0.9549  0.9602  0.9913       0.9931
+Monocyte      0.9124     0.9104  0.9120  0.9666       0.9829
+Neutrophil    0.9882     0.9848  0.9875  0.9972       0.9982
+Platelet      0.9935     1.0000  0.9948  0.9950       0.9935
+Promyelocyte  0.7526     0.6348  0.7256  0.7353       0.9794
+Correspondance classe -> modèle construite pour les 14 classes.
+
+14 panneaux Grad-CAM générés dans : /kaggle/working/logs/gradcam

@@ -1,0 +1,163 @@
+\documentclass[11pt,a4paper]{article}
+
+% Encodage et langue
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{lmodern}
+\usepackage[scaled=0.96]{FiraSans}   % sans-serif (titres, page de garde) ; le corps reste en serif
+
+% Mise en page
+\usepackage[margin=2.5cm,headheight=14pt]{geometry}
+\usepackage{microtype}
+\usepackage{setspace}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{tocloft}
+\usepackage{enumitem}
+
+% Mathématiques
+\usepackage{amsmath,amssymb}
+
+% Figures et tableaux
+\usepackage{graphicx}
+\graphicspath{{figures/}}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{multirow}
+
+% Divers
+\usepackage{xcolor}
+\usepackage{csvsimple}
+\setlength{\marginparwidth}{2cm}
+\usepackage[french,disable]{todonotes}
+
+% Identité visuelle (inspirée de liora.io)
+\definecolor{lioraink}{HTML}{16213E}    % bleu nuit
+\definecolor{liorared}{HTML}{E4002B}    % rouge accent
+\definecolor{lioragrey}{HTML}{5B5B66}   % gris texte secondaire
+\definecolor{lioraline}{HTML}{D9DBE1}   % gris filets
+
+\usepackage[colorlinks=true,linkcolor=lioraink,citecolor=lioraink,urlcolor=liorared]{hyperref}
+
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta}
+
+% Titres : sans-serif, numéro en rouge accent
+\titleformat{\section}[hang]
+  {\sffamily\LARGE\bfseries\color{lioraink}}{\color{liorared}\thesection}{0.6em}{}
+\titleformat{\subsection}[hang]
+  {\sffamily\large\bfseries\color{lioraink}}{\color{liorared}\thesubsection}{0.6em}{}
+\titleformat{\subsubsection}[hang]
+  {\sffamily\normalsize\bfseries\color{lioraink}}{\color{liorared}\thesubsubsection}{0.6em}{}
+\titleformat{\paragraph}[runin]
+  {\sffamily\bfseries\color{lioraink}}{}{0em}{}
+\titlespacing*{\section}{0pt}{2.6ex plus 1ex minus .2ex}{1.2ex}
+\titlespacing*{\subsection}{0pt}{2.0ex plus 1ex minus .2ex}{0.8ex}
+\titlespacing*{\subsubsection}{0pt}{1.6ex plus .8ex minus .2ex}{0.6ex}
+
+% En-têtes / pieds de page
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrule}{\color{lioraline}\hrule height 0.6pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyhead[L]{\footnotesize\sffamily\color{lioragrey}Classification des cellules sanguines}
+\fancyhead[R]{\footnotesize\sffamily\color{lioragrey}\textbf{\thepage}}
+\fancypagestyle{plain}{\fancyhf{}\renewcommand{\headrule}{}\renewcommand{\headrulewidth}{0pt}%
+  \fancyfoot[C]{\footnotesize\sffamily\color{lioragrey}\thepage}}
+
+% Légendes
+\captionsetup{font=small,labelfont={sf,bf,color=lioraink},labelsep=period}
+
+% Table des matières en sans-serif
+\renewcommand{\cfttoctitlefont}{\sffamily\LARGE\bfseries\color{lioraink}}
+\renewcommand{\cftsecfont}{\sffamily\bfseries\color{lioraink}}
+\renewcommand{\cftsecpagefont}{\sffamily\bfseries\color{lioraink}}
+\renewcommand{\cftsubsecfont}{\sffamily\color{lioragrey}}
+\renewcommand{\cftsubsecpagefont}{\sffamily\color{lioragrey}}
+\setlength{\cftbeforesecskip}{6pt}
+
+% Filet accent réutilisable
+\newcommand{\liorarule}[1][3pt]{{\color{liorared}\rule{2.4cm}{#1}}}
+
+% Bibliographie
+\usepackage{csquotes}
+\usepackage[backend=biber,style=numeric,sorting=nyt]{biblatex}
+\addbibresource{references.bib}
+
+% Placeholder de figure (images à recréer proprement plus tard)
+\newcommand{\imgplaceholder}[1]{%
+  \begin{center}
+  \setlength{\fboxsep}{10pt}%
+  \fbox{\parbox[c][3.2cm][c]{0.85\textwidth}{\centering\itshape [Image à recréer]\\[4pt]#1}}%
+  \end{center}}
+
+% En-tête de colonne centré pour les longtable
+\newcommand{\colhead}[1]{\multicolumn{1}{c}{\textbf{#1}}}
+
+% Métadonnées PDF
+\hypersetup{pdftitle={Classification des cellules sanguines},
+  pdfauthor={Joseph Fonlupt, Romain Hild, Rémi Launay}}
+
+% ======================= Inclusion des parties ========================
+% Pour n'inclure qu'une partie du rapport (ex. seulement le MLOps), retirer
+% l'autre nom de fichier de la liste ci-dessous (doit rester dans le préambule).
+\includeonly{sections/datascience,sections/mlops,sections/deploiement_aws,sections/conclusion}
+
+\begin{document}
+
+% ============================ Page de garde ============================
+\begin{titlepage}
+\sffamily
+\setlength{\parindent}{0pt}
+
+{\large\bfseries\itshape\color{lioraink}Liora}\hfill{\footnotesize\color{lioragrey}Your Future, Decoded}\\[2pt]
+{\color{lioraline}\rule{\linewidth}{0.8pt}}
+
+\vspace*{3.8cm}
+
+{\footnotesize\bfseries\color{liorared}\MakeUppercase{Rapport de projet}\par}
+\vspace{0.7em}
+{\color{lioraink}\fontsize{34}{40}\selectfont\bfseries Classification des\\cellules sanguines\par}
+\vspace{1.1em}
+{\liorarule[3pt]\par}
+\vspace{1.1em}
+{\large\color{lioragrey}Exploration, pré-traitement et modélisation\\d'images de frottis sanguins issues de deux sources cliniques\par}
+
+\vfill
+
+{\footnotesize\color{lioragrey}\MakeUppercase{Auteurs}\par}
+\vspace{0.35em}
+{\large\bfseries\color{lioraink}Joseph Fonlupt \quad\textperiodcentered\quad Romain Hild \quad\textperiodcentered\quad Rémi Launay\par}
+
+\vspace{1.8em}
+{\footnotesize\color{lioragrey}\MakeUppercase{Formation}\hfill\MakeUppercase{Date}\par}
+\vspace{0.35em}
+ {\color{lioraink}Machine Learning Engineer chez Liora\hfill\today\par}
+
+\vspace{2.2em}
+{\color{lioraline}\rule{\linewidth}{0.8pt}}\\[3pt]
+{\footnotesize\color{lioragrey}Projet fil rouge réalisé dans le cadre de la formation Liora.}
+\end{titlepage}
+
+% ============================== Sommaire ==============================
+\thispagestyle{plain}
+\tableofcontents
+\listoftodos
+\clearpage
+
+
+\include{sections/datascience}
+\include{sections/mlops}
+
+\include{sections/deploiement_aws}
+\include{sections/conclusion}
+
+
+\printbibliography[heading=bibintoc,title={Bibliographie}]
+
+\end{document}

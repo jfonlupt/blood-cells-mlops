@@ -1,0 +1,6 @@
+outs:
+- md5: 37a2b122c76a8857813aface0c1cc114.dir
+  size: 281239868
+  nfiles: 17093
+  hash: md5
+  path: PBC_dataset_normal_DIB

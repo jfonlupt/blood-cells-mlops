@@ -1,0 +1,82 @@
+# Config de base pour le transfer learning (backbone timm pré-entraîné).
+# Sert de --config au grid configs/grids/architecture/transfer.yaml.
+task: type
+seed: 0
+verbose: true
+
+grid:
+  max_combinations: 200
+
+data:
+  datasets: [barcelona, munich]
+  n_images: 0            # 0 = tout le dataset
+  test_size: 0.15
+  stratify: type_dataset
+
+transform:
+  img_size: [224, 224]
+  norm_stats: imagenet      # dataset | imagenet — les poids pré-entraînés attendent les stats ImageNet
+  reinhard: true
+  reinhard_samples: 500
+  clahe: true
+  clahe_clip_limit: 2.0
+  clahe_grid_size: 8
+  jpeg: true
+  jpeg_quality: 60
+  p_rotation: 0.5
+  p_brightness: 0.5
+  p_contrast: 0.5
+  brightness_delta: 0.25
+  contrast_delta: 0.15
+  p_flip: 0.5
+  p_blur: 0.0
+  blur_kernel_size: 5
+  blur_sigma_min: 0.1
+  blur_sigma_max: 2.0
+
+model:
+  name: transfer
+  transfer:
+    backbone: vit_base_patch16_224.augreg2_in21k_ft_in1k            # tout nom connu de timm
+    pretrained: true
+    freeze: none                  # none | all (linear probing : backbone gelé, BN en eval)
+    head_hidden: []               # couches cachées du MLP ; [] = Linear direct
+    head_dropout: 0.0
+    backbone_lr_mult: 0.1         # lr backbone = optim.lr * mult ; 0 ≈ gelé
+
+loss:
+  beta: 0.999
+  gamma: 1.0
+  lambda_cost: 1.0
+  extra_weight: {}
+  label_smoothing: 0.0
+  cost_matrix: [[0.0, 0.5, 1.0], [2.0, 0.0, 1.0], [4.0, 3.0, 0.0]]
+
+optim:
+  name: adam
+  lr: 0.001
+  weight_decay: 0.0
+
+scheduler:
+  name: plateau
+  patience: 3
+  lr_min: 0.0
+  step_gamma: 0.1
+
+train:
+  nb_epoch: 100
+  batch_size: 32
+  validation: holdout
+  val_size: 0.15
+  cross_val_folds: 3
+  early_stopping_patience: 10
+  device: auto
+  sampler: weight
+  sampler_alpha: 1.0
+  num_workers: 4
+  grad_clip_norm: 1.0
+
+output:
+  root: results
+  save_checkpoint: true
+  save_figures: true

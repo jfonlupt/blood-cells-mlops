@@ -1,0 +1,62 @@
+name: Report
+
+# Compile reports/report.tex (pdflatex + biber via .latexmkrc) et publie le PDF :
+#   - comme artifact de la run (toujours) ;
+#   - comme release « latest » (push sur main ou déclenchement manuel) —
+#     retrouvable sur github.com/<repo>/releases/latest.
+
+on:
+  push:
+    paths:
+      - "reports/report.tex"
+      - "reports/references.bib"
+      - "reports/.latexmkrc"
+      - "reports/figures/**"
+      - ".github/workflows/report.yml"
+  pull_request:
+    paths:
+      - "reports/report.tex"
+      - "reports/references.bib"
+      - "reports/.latexmkrc"
+      - "reports/figures/**"
+      - ".github/workflows/report.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # nécessaire pour créer / mettre à jour la release
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compile report.tex
+        uses: xu-cheng/latex-action@v3
+        with:
+          working_directory: reports
+          root_file: report.tex
+          # latexmk lit reports/.latexmkrc (pdflatex + biber automatique)
+
+      - name: Upload PDF
+        uses: actions/upload-artifact@v4
+        with:
+          name: report
+          path: reports/report.pdf
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish rolling "latest" release
+        # romain_v2 : branche où vit le rapport LaTeX en attendant le merge dans main.
+        # Le bouton « Run workflow » (workflow_dispatch) n'apparaît qu'une fois ce
+        # fichier sur la branche par défaut (main).
+        if: >
+          github.ref == 'refs/heads/main'
+          || github.ref == 'refs/heads/romain'
+          || github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete latest --cleanup-tag --yes || true
+          gh release create latest reports/report.pdf \
+            --title "Rapport (dernière compilation)" \
+            --notes "Compilé depuis ${GITHUB_SHA::7} le $(date -u '+%Y-%m-%d %H:%M UTC')."

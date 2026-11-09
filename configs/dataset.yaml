@@ -1,0 +1,70 @@
+# Config de base — reprend les valeurs par défaut de ExperimentConfig.
+# Le grid search tourne par défaut en holdout (validation croisée = coût x N).
+task: dataset
+seed: 0
+
+grid:
+  max_combinations: 200
+data:
+  datasets: [barcelona, munich]
+  n_images: 2000            # 0 = tout le dataset
+  test_size: 0.15
+  stratify: dataset
+
+transform:
+  img_size: [224, 224]
+  reinhard: true
+  reinhard_samples: 500
+  clahe: true
+  clahe_clip_limit: 2.0
+  clahe_grid_size: 8
+  jpeg: true
+  jpeg_quality: 30
+  p_rotation: 0.9
+  p_brightness: 0.9
+  p_contrast: 0.9
+  p_flip: 0.9
+  brightness_delta: 0.3
+  contrast_delta: 0.3
+  p_blur: 0.0
+  blur_kernel_size: 5
+  blur_sigma_min: 0.1
+  blur_sigma_max: 2.0
+
+model:
+  name: dataset
+
+loss:                    # tâche dataset -> BCEWithLogitsLoss, ces réglages sont ignorés
+  beta: 0.0
+  gamma: 0.0
+  lambda_cost: 0.0
+  extra_weight: {}
+  label_smoothing: 0.0
+  cost_matrix: null
+
+optim:
+  name: adam
+  lr: 0.001
+  weight_decay: 0.0
+
+scheduler:
+  name: none
+  patience: 3
+  lr_min: 0.0
+  step_gamma: 0.1
+
+train:
+  nb_epoch: 3
+  batch_size: 64
+  validation: holdout
+  val_size: 0.15
+  cross_val_folds: 3
+  early_stopping_patience: 0
+  device: auto
+  num_workers: 10       # nombre de workers des DataLoader (0 = process principal)
+  grad_clip_norm: 1.0  # 0 = desactive ; sinon norme max du gradient (clip_grad_norm_)
+
+output:
+  root: results
+  save_checkpoint: false
+  save_figures: false

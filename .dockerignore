@@ -1,0 +1,61 @@
+# Virtual environments (the most important one)
+.venv/
+venv/
+
+# Python caches and build artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.streamlit/
+
+# Git and editors
+.git/
+.gitignore
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+.agents/
+.claude/
+.superpowers/
+
+# Docker files themselves
+Dockerfile*
+docker-compose*.yml
+compose*.yml
+.dockerignore
+
+# Secrets and local config
+.env
+.env.*
+!.env.example
+
+# Data, notebooks, models (adjust to your project)
+data/
+notebooks/
+models/
+results/
+*.ipynb
+.ipynb_checkpoints/
+mlruns/
+*.ckpt
+*.pt
+
+# Tests and docs, if not needed at runtime
+tests/
+docs/
+reports/
+references/
+
+# DVC : cache et métadonnées (les données passent par le volume ./data)
+.dvc/
+.dvcignore
+*.dvc
